@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(curl:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(powershell -Command \"Invoke-WebRequest -Uri ''http://localhost:3000/api/dashboard'' -OutFile ''C:\\\\temp\\\\dashboard.json''\")"
     ]
   }
 }

@@ -226,6 +226,61 @@ export async function GET() {
       relatedTo: t.What?.Name || null
     }));
 
+    // DEBUG: Get TODAY's contacts breakdown (same query as dashboard uses)
+    const contactsSubjects = ['Application Taken', 'No Opportunity', 'Not Interested', 'Scheduled Follow Up'];
+
+    // Query each subject individually to see counts
+    const contactsBreakdown: Record<string, number> = {};
+    for (const subject of contactsSubjects) {
+      const subjectQuery = `
+        SELECT COUNT(Id) cnt
+        FROM Task
+        WHERE Subject = '${subject}'
+          AND CreatedDate >= ${easternTodayStart.toISOString()}
+          AND CreatedDate < ${easternTodayEnd.toISOString()}
+      `;
+      try {
+        const result = await conn.query(subjectQuery);
+        contactsBreakdown[subject] = (result.records[0] as { cnt?: number })?.cnt || 0;
+      } catch (e) {
+        contactsBreakdown[subject] = -1; // Error indicator
+      }
+    }
+
+    // Get total contacts using same query as dashboard
+    const totalContactsQuery = `
+      SELECT COUNT(Id) cnt
+      FROM Task
+      WHERE Subject IN ('Application Taken', 'No Opportunity', 'Not Interested', 'Scheduled Follow Up')
+        AND CreatedDate >= ${easternTodayStart.toISOString()}
+        AND CreatedDate < ${easternTodayEnd.toISOString()}
+    `;
+    let totalContactsToday = 0;
+    try {
+      const result = await conn.query(totalContactsQuery);
+      totalContactsToday = (result.records[0] as { cnt?: number })?.cnt || 0;
+    } catch (e) {
+      console.log('Total contacts query failed:', e);
+    }
+
+    // List all tasks that match the contacts query for inspection
+    const contactsTasksListQuery = `
+      SELECT Id, Subject, CreatedDate, Owner.Name
+      FROM Task
+      WHERE Subject IN ('Application Taken', 'No Opportunity', 'Not Interested', 'Scheduled Follow Up')
+        AND CreatedDate >= ${easternTodayStart.toISOString()}
+        AND CreatedDate < ${easternTodayEnd.toISOString()}
+      ORDER BY Subject, CreatedDate DESC
+      LIMIT 100
+    `;
+    let contactsTasksList: Array<{ Id: string; Subject: string; CreatedDate: string; Owner?: { Name: string } }> = [];
+    try {
+      const result = await conn.query(contactsTasksListQuery);
+      contactsTasksList = result.records as typeof contactsTasksList;
+    } catch (e) {
+      console.log('Contacts tasks list query failed:', e);
+    }
+
     return NextResponse.json({
       timestamp: new Date().toISOString(),
       serverTime: now.toISOString(),
@@ -247,7 +302,36 @@ export async function GET() {
         totalCount: rahulTasks.totalSize,
         tasks: rahulTasksList
       },
-      userCount: Object.keys(userMap).length
+      userCount: Object.keys(userMap).length,
+      // Contacts debugging (Eastern timezone)
+      dailyContactsBreakdown_Eastern: contactsBreakdown,
+      dailyContactsTotal_Eastern: totalContactsToday,
+      dailyContactsSum_Eastern: Object.values(contactsBreakdown).reduce((a, b) => a + b, 0),
+      dailyContactsTasks_Eastern: contactsTasksList.map(t => ({
+        id: t.Id,
+        subject: t.Subject,
+        createdDate: t.CreatedDate,
+        ownerName: t.Owner?.Name || 'Unknown'
+      })),
+      // MONTHLY contacts debugging
+      monthlyContactsBreakdown_Eastern: await (async () => {
+        const breakdown: Record<string, number> = {};
+        for (const subject of contactsSubjects) {
+          const q = `SELECT COUNT(Id) cnt FROM Task WHERE Subject = '${subject}' AND CreatedDate >= ${easternMonthStart.toISOString()} AND CreatedDate < ${easternMonthEnd.toISOString()}`;
+          try {
+            const r = await conn.query(q);
+            breakdown[subject] = (r.records[0] as { cnt?: number })?.cnt || 0;
+          } catch { breakdown[subject] = -1; }
+        }
+        return breakdown;
+      })(),
+      monthlyContactsTotal_Eastern: await (async () => {
+        const q = `SELECT COUNT(Id) cnt FROM Task WHERE Subject IN ('Application Taken', 'No Opportunity', 'Not Interested', 'Scheduled Follow Up') AND CreatedDate >= ${easternMonthStart.toISOString()} AND CreatedDate < ${easternMonthEnd.toISOString()}`;
+        try {
+          const r = await conn.query(q);
+          return (r.records[0] as { cnt?: number })?.cnt || 0;
+        } catch { return -1; }
+      })()
     });
 
   } catch (error) {
