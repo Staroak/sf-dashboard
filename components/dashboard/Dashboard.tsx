@@ -142,7 +142,7 @@ export function Dashboard() {
               {/* Logo/Brand */}
               <div className="flex items-center gap-2">
                 <img
-                  src="/BP-LOGO.webp"
+                  src="/BP-Logo.webp"
                   alt="Blue Pearl Mortgage"
                   className="w-8 h-8 rounded-lg object-contain"
                 />
