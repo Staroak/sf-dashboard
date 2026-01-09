@@ -77,30 +77,30 @@ export function MetricCard({
       className={cn(
         "relative overflow-hidden rounded-xl border bg-gray-900/80 shadow-sm transition-all hover:shadow-lg",
         styles.border,
-        size === "large" ? "p-6" : "p-4"
+        size === "large" ? "p-4" : "p-3"
       )}
     >
       {/* Background gradient */}
       <div className={cn(
-        "absolute top-0 right-0 w-32 h-32 opacity-10 rounded-full blur-2xl",
+        "absolute top-0 right-0 w-24 h-24 opacity-10 rounded-full blur-2xl",
         `bg-gradient-to-br ${styles.gradient}`
       )} />
 
       <div className="relative flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-400 mb-1">{title}</p>
+          <p className="text-xs font-medium text-gray-400 mb-0.5">{title}</p>
           <h3 className={cn(
             "font-bold tracking-tight text-white",
-            size === "large" ? "text-5xl" : "text-3xl"
+            size === "large" ? "text-4xl" : "text-2xl"
           )}>
             {value.toLocaleString()}
           </h3>
           {subtitle && (
-            <p className={cn("text-sm mt-1", styles.text)}>{subtitle}</p>
+            <p className={cn("text-xs", styles.text)}>{subtitle}</p>
           )}
           {trend && (
             <div className={cn(
-              "flex items-center gap-1 mt-2 text-sm font-medium",
+              "flex items-center gap-1 mt-1 text-xs font-medium",
               trend.isPositive ? "text-green-500" : "text-red-500"
             )}>
               <span>{trend.isPositive ? "+" : ""}{trend.value}%</span>
@@ -110,10 +110,10 @@ export function MetricCard({
         </div>
 
         <div className={cn(
-          "flex items-center justify-center rounded-lg p-3",
+          "flex items-center justify-center rounded-lg p-2",
           styles.iconBg
         )}>
-          <Icon className="h-6 w-6 text-white" />
+          <Icon className="h-5 w-5 text-white" />
         </div>
       </div>
     </div>

@@ -127,10 +127,11 @@ class SalesforceService {
 
   // Get Applications Taken (from Task object with Subject = 'Application Taken')
   private async getApplicationsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
-    const bounds = this.getDateBoundaries();
+    // Use explicit Eastern timezone date ranges to match Salesforce org timezone
+    const boundaries = this.getDateBoundaries();
     const dateFilter = period === 'daily'
-      ? `CreatedDate >= ${bounds.todayStart} AND CreatedDate < ${bounds.todayEnd}`
-      : `CreatedDate >= ${bounds.monthStart} AND CreatedDate < ${bounds.monthEnd}`;
+      ? `CreatedDate >= ${boundaries.todayStart} AND CreatedDate < ${boundaries.todayEnd}`
+      : `CreatedDate >= ${boundaries.monthStart} AND CreatedDate < ${boundaries.monthEnd}`;
 
     // Query Task object for "Application Taken" tasks
     const query = `
@@ -166,10 +167,11 @@ class SalesforceService {
 
   // Get Contacts Made (from Task object with Subject starting with 'Outbound Call')
   private async getContactsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
-    const bounds = this.getDateBoundaries();
+    // Use explicit Eastern timezone date ranges to match Salesforce org timezone
+    const boundaries = this.getDateBoundaries();
     const dateFilter = period === 'daily'
-      ? `CreatedDate >= ${bounds.todayStart} AND CreatedDate < ${bounds.todayEnd}`
-      : `CreatedDate >= ${bounds.monthStart} AND CreatedDate < ${bounds.monthEnd}`;
+      ? `CreatedDate >= ${boundaries.todayStart} AND CreatedDate < ${boundaries.todayEnd}`
+      : `CreatedDate >= ${boundaries.monthStart} AND CreatedDate < ${boundaries.monthEnd}`;
 
     // Query Task object for "Outbound Call" tasks (matches "Outbound Call - Please Update" etc.)
     const query = `

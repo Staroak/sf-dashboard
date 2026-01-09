@@ -82,15 +82,15 @@ export function QuoteSidebar() {
   };
 
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex flex-col gap-3 h-full">
       {/* Motivational Quote */}
-      <div className="rounded-xl border border-gray-800 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 p-4 relative overflow-hidden">
+      <div className="rounded-xl border border-gray-800 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 p-3 relative overflow-hidden">
         {/* Decorative element */}
-        <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/20 rounded-full blur-2xl" />
+        <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/20 rounded-full blur-2xl" />
 
-        <div className="flex items-center gap-2 mb-3">
-          <div className="p-1.5 rounded-lg bg-blue-500/20">
-            <Quote className="h-4 w-4 text-blue-400" />
+        <div className="flex items-center gap-2 mb-2">
+          <div className="p-1 rounded-lg bg-blue-500/20">
+            <Quote className="h-3 w-3 text-blue-400" />
           </div>
           <span className="text-xs font-medium text-blue-400 uppercase tracking-wide">
             Daily Inspiration
@@ -101,7 +101,7 @@ export function QuoteSidebar() {
           "transition-opacity duration-500",
           isQuoteFading ? "opacity-0" : "opacity-100"
         )}>
-          <blockquote className="text-sm italic text-gray-200 leading-relaxed mb-2">
+          <blockquote className="text-xs italic text-gray-200 leading-relaxed mb-1">
             &ldquo;{currentQuote.quote}&rdquo;
           </blockquote>
           <cite className="text-xs text-gray-400 not-italic">
@@ -110,20 +110,20 @@ export function QuoteSidebar() {
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-700/50">
+        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-gray-700/50">
           <button
             onClick={prevQuote}
-            className="p-1 rounded hover:bg-gray-800 transition-colors"
+            className="p-0.5 rounded hover:bg-gray-800 transition-colors"
             aria-label="Previous quote"
           >
-            <ChevronLeft className="h-4 w-4 text-gray-400" />
+            <ChevronLeft className="h-3 w-3 text-gray-400" />
           </button>
           <div className="flex gap-1">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
                 className={cn(
-                  "w-1.5 h-1.5 rounded-full transition-colors",
+                  "w-1 h-1 rounded-full transition-colors",
                   currentQuoteIndex % 3 === i ? "bg-blue-500" : "bg-gray-600"
                 )}
               />
@@ -131,22 +131,22 @@ export function QuoteSidebar() {
           </div>
           <button
             onClick={nextQuote}
-            className="p-1 rounded hover:bg-gray-800 transition-colors"
+            className="p-0.5 rounded hover:bg-gray-800 transition-colors"
             aria-label="Next quote"
           >
-            <ChevronRight className="h-4 w-4 text-gray-400" />
+            <ChevronRight className="h-3 w-3 text-gray-400" />
           </button>
         </div>
       </div>
 
       {/* Pro Tip */}
-      <div className="rounded-xl border border-gray-800 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 p-4 relative overflow-hidden flex-1">
+      <div className="rounded-xl border border-gray-800 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 p-3 relative overflow-hidden flex-1">
         {/* Decorative element */}
-        <div className="absolute bottom-0 left-0 w-20 h-20 bg-amber-500/20 rounded-full blur-2xl" />
+        <div className="absolute bottom-0 left-0 w-16 h-16 bg-amber-500/20 rounded-full blur-2xl" />
 
-        <div className="flex items-center gap-2 mb-3">
-          <div className="p-1.5 rounded-lg bg-amber-500/20">
-            <TipIcon className="h-4 w-4 text-amber-400" />
+        <div className="flex items-center gap-2 mb-2">
+          <div className="p-1 rounded-lg bg-amber-500/20">
+            <TipIcon className="h-3 w-3 text-amber-400" />
           </div>
           <span className="text-xs font-medium text-amber-400 uppercase tracking-wide">
             {currentTip.category}
@@ -157,26 +157,26 @@ export function QuoteSidebar() {
           "transition-opacity duration-500",
           isTipFading ? "opacity-0" : "opacity-100"
         )}>
-          <p className="text-sm text-gray-200 leading-relaxed">
+          <p className="text-xs text-gray-200 leading-relaxed">
             {currentTip.tip}
           </p>
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-700/50">
+        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-gray-700/50">
           <button
             onClick={prevTip}
-            className="p-1 rounded hover:bg-gray-800 transition-colors"
+            className="p-0.5 rounded hover:bg-gray-800 transition-colors"
             aria-label="Previous tip"
           >
-            <ChevronLeft className="h-4 w-4 text-gray-400" />
+            <ChevronLeft className="h-3 w-3 text-gray-400" />
           </button>
           <div className="flex gap-1">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
                 className={cn(
-                  "w-1.5 h-1.5 rounded-full transition-colors",
+                  "w-1 h-1 rounded-full transition-colors",
                   currentTipIndex % 3 === i ? "bg-amber-500" : "bg-gray-600"
                 )}
               />
@@ -184,10 +184,10 @@ export function QuoteSidebar() {
           </div>
           <button
             onClick={nextTip}
-            className="p-1 rounded hover:bg-gray-800 transition-colors"
+            className="p-0.5 rounded hover:bg-gray-800 transition-colors"
             aria-label="Next tip"
           >
-            <ChevronRight className="h-4 w-4 text-gray-400" />
+            <ChevronRight className="h-3 w-3 text-gray-400" />
           </button>
         </div>
       </div>

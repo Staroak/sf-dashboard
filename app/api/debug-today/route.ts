@@ -97,49 +97,157 @@ export async function GET() {
 
     const todayOutboundPleaseUpdate = await conn.query(todayOutboundPleaseUpdateQuery);
 
-    // Get time boundaries for debugging
+    // Get time boundaries for debugging - Eastern timezone
     const now = new Date();
-    const pacificNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    const timezone = 'America/New_York';
 
-    // Get Pacific midnight today
-    const pacificToday = new Date(pacificNow);
-    pacificToday.setHours(0, 0, 0, 0);
+    // Get current date in Eastern timezone
+    const easternFormatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const easternDate = easternFormatter.format(now);
+    const [year, month, day] = easternDate.split('-').map(Number);
 
-    // Get Pacific midnight tomorrow
-    const pacificTomorrow = new Date(pacificToday);
-    pacificTomorrow.setDate(pacificTomorrow.getDate() + 1);
+    // EST is UTC-5 (January = no DST)
+    const utcOffset = 5;
 
-    // Query with explicit time range for Pacific timezone
-    const pacificRangeQuery = `
+    // Eastern midnight today in UTC
+    const easternTodayStart = new Date(Date.UTC(year, month - 1, day, utcOffset, 0, 0, 0));
+    const easternTodayEnd = new Date(Date.UTC(year, month - 1, day + 1, utcOffset, 0, 0, 0));
+
+    // Query with explicit time range for Eastern timezone
+    const easternRangeQuery = `
       SELECT COUNT(Id) cnt
       FROM Task
-      WHERE Subject = 'Outbound Call - Please Update'
-        AND CreatedDate >= ${pacificToday.toISOString()}
-        AND CreatedDate < ${pacificTomorrow.toISOString()}
+      WHERE Subject LIKE 'Outbound Call%'
+        AND CreatedDate >= ${easternTodayStart.toISOString()}
+        AND CreatedDate < ${easternTodayEnd.toISOString()}
     `;
 
-    let pacificCount = { records: [{ cnt: 0 }] };
+    let easternCount = { records: [{ cnt: 0 }] };
     try {
-      pacificCount = await conn.query(pacificRangeQuery);
+      easternCount = await conn.query(easternRangeQuery);
     } catch (e) {
-      console.log('Pacific range query failed:', e);
+      console.log('Eastern range query failed:', e);
     }
+
+    // Query for Application Taken with Eastern timezone
+    const easternAppQuery = `
+      SELECT COUNT(Id) cnt
+      FROM Task
+      WHERE Subject = 'Application Taken'
+        AND CreatedDate >= ${easternTodayStart.toISOString()}
+        AND CreatedDate < ${easternTodayEnd.toISOString()}
+    `;
+
+    let easternAppCount = { records: [{ cnt: 0 }] };
+    try {
+      easternAppCount = await conn.query(easternAppQuery);
+    } catch (e) {
+      console.log('Eastern app query failed:', e);
+    }
+
+    // Calculate Eastern timezone month boundaries (same as dashboard)
+    const easternMonthStart = new Date(Date.UTC(year, month - 1, 1, utcOffset, 0, 0, 0));
+    const easternMonthEnd = new Date(Date.UTC(year, month, 1, utcOffset, 0, 0, 0));
+
+    // Get MONTHLY Application Taken count by broker using Eastern timezone range (same as dashboard now)
+    const monthlyAppByBrokerQuery = `
+      SELECT OwnerId, Owner.Name, COUNT(Id) total
+      FROM Task
+      WHERE Subject = 'Application Taken'
+        AND CreatedDate >= ${easternMonthStart.toISOString()}
+        AND CreatedDate < ${easternMonthEnd.toISOString()}
+      GROUP BY OwnerId, Owner.Name
+      ORDER BY COUNT(Id) DESC
+    `;
+
+    // Also get the raw list of Application Taken tasks for Rahul to debug
+    // Include Who.Name (Contact/Lead name) to match with Salesforce report
+    const rahulTasksQuery = `
+      SELECT Id, Subject, CreatedDate, Owner.Name, Who.Name, What.Name
+      FROM Task
+      WHERE Subject = 'Application Taken'
+        AND Owner.Name LIKE '%Rahul%'
+        AND CreatedDate >= ${easternMonthStart.toISOString()}
+        AND CreatedDate < ${easternMonthEnd.toISOString()}
+      ORDER BY CreatedDate DESC
+    `;
+
+    let rahulTasks = { records: [] as Array<{ Id: string; Subject: string; CreatedDate: string; Owner?: { Name: string }; Who?: { Name: string }; What?: { Name: string } }>, totalSize: 0 };
+    try {
+      rahulTasks = await conn.query(rahulTasksQuery);
+    } catch (e) {
+      console.log('Rahul tasks query failed:', e);
+    }
+
+    let monthlyAppByBroker = { records: [] as Array<{ OwnerId: string; Owner?: { Name: string }; total?: number; expr0?: number }> };
+    try {
+      monthlyAppByBroker = await conn.query(monthlyAppByBrokerQuery);
+    } catch (e) {
+      console.log('Monthly app by broker query failed:', e);
+    }
+
+    // Format monthly app results
+    const monthlyAppResults = monthlyAppByBroker.records.map(r => ({
+      ownerId: r.OwnerId,
+      ownerName: r.Owner?.Name || 'Unknown',
+      count: r.total || r.expr0 || 0
+    }));
+
+    // Get all user names to properly map IDs to names
+    const userQuery = `SELECT Id, Name FROM User WHERE IsActive = true LIMIT 200`;
+    let userMap: Record<string, string> = {};
+    try {
+      const users = await conn.query(userQuery);
+      for (const user of users.records as Array<{ Id: string; Name: string }>) {
+        userMap[user.Id] = user.Name;
+      }
+    } catch (e) {
+      console.log('User query failed:', e);
+    }
+
+    // Re-map the monthly results with proper names
+    const monthlyAppWithNames = monthlyAppResults.map(r => ({
+      ...r,
+      ownerName: userMap[r.ownerId] || r.ownerName
+    }));
+
+    // Format Rahul's tasks with contact/lead names for comparison
+    const rahulTasksList = rahulTasks.records.map(t => ({
+      id: t.Id,
+      subject: t.Subject,
+      createdDate: t.CreatedDate,
+      ownerName: t.Owner?.Name,
+      contactName: t.Who?.Name || null,
+      relatedTo: t.What?.Name || null
+    }));
 
     return NextResponse.json({
       timestamp: new Date().toISOString(),
       serverTime: now.toISOString(),
-      pacificTime: pacificNow.toISOString(),
-      pacificTodayStart: pacificToday.toISOString(),
-      pacificTodayEnd: pacificTomorrow.toISOString(),
+      easternDate: easternDate,
+      easternTodayStart: easternTodayStart.toISOString(),
+      easternTodayEnd: easternTodayEnd.toISOString(),
+      easternMonthStart: easternMonthStart.toISOString(),
+      easternMonthEnd: easternMonthEnd.toISOString(),
       totalTasksToday: todayTasks.totalSize,
       subjectCounts: subjectCounts,
-      todayApplicationTaken: todayAppTaken.records[0],
-      todayOutboundCallExact: todayOutboundExact.records[0],
-      todayOutboundCallLike: todayOutboundLike.records[0],
-      todayOutboundCallDash: todayOutboundDash.records[0],
-      todayOutboundPleaseUpdate: todayOutboundPleaseUpdate.records[0],
+      todayApplicationTaken_UTC: todayAppTaken.records[0],
+      todayOutboundCallLike_UTC: todayOutboundLike.records[0],
+      todayOutboundPleaseUpdate_UTC: todayOutboundPleaseUpdate.records[0],
       outboundCallSubjects: outboundSubjectCounts,
-      pacificTimezoneCount: pacificCount.records[0]
+      easternTimezone_OutboundCall: easternCount.records[0],
+      easternTimezone_ApplicationTaken: easternAppCount.records[0],
+      monthlyApplicationsByBroker_THIS_MONTH: monthlyAppWithNames,
+      rahulTasks_THIS_MONTH: {
+        totalCount: rahulTasks.totalSize,
+        tasks: rahulTasksList
+      },
+      userCount: Object.keys(userMap).length
     });
 
   } catch (error) {

@@ -23,17 +23,17 @@ export function StatsSection({
   const isDaily = period === "Daily";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div className="flex items-center gap-2">
         {isDaily ? (
-          <Calendar className="h-5 w-5 text-blue-500" />
+          <Calendar className="h-4 w-4 text-blue-500" />
         ) : (
-          <TrendingUp className="h-5 w-5 text-purple-500" />
+          <TrendingUp className="h-4 w-4 text-purple-500" />
         )}
-        <h2 className="text-xl font-semibold text-white">{title}</h2>
+        <h2 className="text-lg font-semibold text-white">{title}</h2>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <MetricCard
           title="Contacts Made"
           value={contactsMade}

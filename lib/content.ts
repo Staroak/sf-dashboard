@@ -1,107 +1,158 @@
 export const motivationalQuotes = [
+  // Mortgage & Real Estate Industry Leaders
   {
-    quote: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
-    author: "Winston Churchill"
+    quote: "Owning a home is a keystone of wealth — both financial affluence and emotional security.",
+    author: "Suze Orman"
   },
   {
-    quote: "The only way to do great work is to love what you do.",
-    author: "Steve Jobs"
+    quote: "Real estate is not just about property; it's about people.",
+    author: "Tom Ferry"
   },
   {
-    quote: "Every sale has five basic obstacles: no need, no money, no hurry, no desire, no trust.",
-    author: "Zig Ziglar"
+    quote: "To be successful in real estate, you must always put your clients' best interests first. When you do, your personal needs will be realized beyond your greatest expectations.",
+    author: "Anthony Hitt, CEO at Engel & Völkers"
   },
   {
-    quote: "Don't find customers for your products, find products for your customers.",
-    author: "Seth Godin"
+    quote: "Success is actually a short race — a sprint fueled by discipline just long enough for habit to kick in and take over.",
+    author: "Gary Keller"
   },
   {
-    quote: "The best salespeople are the ones who put themselves in their customer's shoes.",
+    quote: "When you put genuine inspiration behind your actions, the whole world opens up to you.",
+    author: "Tom Ferry"
+  },
+  {
+    quote: "You can make money or you can make excuses.",
+    author: "Tom Ferry"
+  },
+  {
+    quote: "In business, you're the chief salesman. Create a sense of demand, rather than waiting to have demand.",
+    author: "Barbara Corcoran"
+  },
+  {
+    quote: "Success in real estate comes down to two factors: taking care of and valuing the customer.",
+    author: "Michael Miedler, CEO of Century 21"
+  },
+  {
+    quote: "Establishing trust is better than any sales technique.",
+    author: "Mike Puglia"
+  },
+  // Sales & Motivation Legends
+  {
+    quote: "Approach each customer with the idea of helping them solve a problem or achieve a goal, not of selling a product.",
     author: "Brian Tracy"
   },
   {
-    quote: "Success is walking from failure to failure with no loss of enthusiasm.",
-    author: "Winston Churchill"
+    quote: "Don't expect to be motivated every day. You won't be. Don't count on motivation. Count on discipline.",
+    author: "Jocko Willink"
   },
   {
-    quote: "Your attitude, not your aptitude, will determine your altitude.",
+    quote: "Like bathing, motivation doesn't last. That's why we recommend it daily.",
     author: "Zig Ziglar"
   },
   {
-    quote: "The secret of getting ahead is getting started.",
-    author: "Mark Twain"
+    quote: "Sales are contingent upon the attitude of the salesman, not the attitude of the prospect.",
+    author: "W. Clement Stone"
   },
   {
-    quote: "People don't buy for logical reasons. They buy for emotional reasons.",
-    author: "Zig Ziglar"
+    quote: "Show up in a way that you'd want someone to show up for you.",
+    author: "Seth Godin"
   },
   {
-    quote: "A goal without a plan is just a wish.",
-    author: "Antoine de Saint-Exupery"
+    quote: "I find that the harder I work, the more luck I seem to have.",
+    author: "Thomas Jefferson"
   },
   {
-    quote: "Opportunities don't happen. You create them.",
-    author: "Chris Grosser"
-  },
-  {
-    quote: "The harder I work, the luckier I get.",
-    author: "Gary Player"
-  },
-  {
-    quote: "Quality is not an act, it is a habit.",
-    author: "Aristotle"
+    quote: "Don't wait for the right opportunity: create it.",
+    author: "George Bernard Shaw"
   },
   {
     quote: "You miss 100% of the shots you don't take.",
     author: "Wayne Gretzky"
   },
   {
-    quote: "Make a customer, not a sale.",
-    author: "Katherine Barchetti"
-  },
-  {
-    quote: "Act as if what you do makes a difference. It does.",
-    author: "William James"
-  },
-  {
-    quote: "Great things never come from comfort zones.",
-    author: "Ben Francia"
+    quote: "Every strike brings me closer to the next home run.",
+    author: "Babe Ruth"
   },
   {
     quote: "The question isn't who is going to let me; it's who is going to stop me.",
     author: "Ayn Rand"
   },
   {
-    quote: "Every strike brings me closer to the next home run.",
-    author: "Babe Ruth"
-  },
-  {
-    quote: "Sales are contingent upon the attitude of the salesman, not the attitude of the prospect.",
-    author: "W. Clement Stone"
+    quote: "Great things never come from comfort zones.",
+    author: "Ben Francia"
   }
 ];
 
 export const proTips = [
+  // Objection Handling - Mortgage Specific
   {
     category: "Objection Handling",
-    tip: "When a client says 'I need to think about it', acknowledge their need and ask: 'What specific concerns would you like to think through? I'd be happy to address them now.'",
+    tip: "When a client says 'I need to think about it': 'I understand. What specific concerns would you like to think through? I'd be happy to address them now so you can make a confident decision.'",
     icon: "shield"
   },
   {
     category: "Objection Handling",
-    tip: "For rate objections: 'I understand rate is important. Let me show you the total cost savings over the life of your loan, not just the monthly payment.'",
+    tip: "For rate objections: 'I understand rate is important. Let me show you the total cost savings over the life of your loan — the APR tells the full story, not just the rate.'",
     icon: "shield"
   },
   {
     category: "Objection Handling",
-    tip: "When they say 'I'm working with another broker': 'That's great! Competition helps you get the best deal. May I ask what rate they offered? I'd love the chance to earn your business.'",
+    tip: "When they say 'I'm working with another broker': 'That's great you're shopping around! May I ask what rate and terms they offered? I'd love the chance to see if we can do better.'",
     icon: "shield"
   },
   {
     category: "Objection Handling",
-    tip: "For 'Bad timing' objections: 'I understand. When would be a better time to revisit this? In the meantime, let me send you some information so you're prepared.'",
+    tip: "'Getting a loan is too much hassle' — Frame your response by emphasizing ease: 'Our process is streamlined. Most clients are surprised how smooth it is. I handle the heavy lifting.'",
     icon: "shield"
   },
+  {
+    category: "Objection Handling",
+    tip: "'I'm not interested right now' — Response: 'I understand timing is everything. Many clients who felt the same discovered they could reduce payments by $200-300. May I ask your current rate?'",
+    icon: "shield"
+  },
+  // Lead Conversion - Small Brokerage Focus
+  {
+    category: "Lead Conversion",
+    tip: "Follow up within 5 minutes of receiving a lead. Research shows response time is the #1 factor in conversion — personal follow-up can increase conversion by up to 22%.",
+    icon: "star"
+  },
+  {
+    category: "Lead Conversion",
+    tip: "68% of borrowers research lenders online before making contact. Make sure your online presence answers their questions before they even call.",
+    icon: "star"
+  },
+  {
+    category: "Lead Conversion",
+    tip: "Loan officers who practice scripts close 28% more loans. Dedicate 30 minutes daily to script practice and role-playing objection handling.",
+    icon: "star"
+  },
+  {
+    category: "Lead Conversion",
+    tip: "Set concrete, measurable targets: 30-day, 90-day, and annual goals. Track transaction volume by both dollar amount and number of deals.",
+    icon: "star"
+  },
+  // Building Your Book - Small Brokerage Tips
+  {
+    category: "Building Your Book",
+    tip: "Partner with real estate agents, financial planners, and builders. These professionals are already trusted advisors — your mortgage expertise completes their offering.",
+    icon: "users"
+  },
+  {
+    category: "Building Your Book",
+    tip: "If a bank can't place a particular deal, position yourself as their go-to referral. Build relationships with institutions for the deals they turn away.",
+    icon: "users"
+  },
+  {
+    category: "Building Your Book",
+    tip: "As a small brokerage, your advantage is personalized service. Demonstrate that you understand not just WHAT clients want, but WHY they want it.",
+    icon: "users"
+  },
+  {
+    category: "Building Your Book",
+    tip: "Become a self-starter marketer: develop your own community network and lead generation. Don't rely solely on company-generated leads.",
+    icon: "users"
+  },
+  // Sales Technique
   {
     category: "Sales Technique",
     tip: "Use the 'Feel, Felt, Found' method: 'I understand how you feel. Other clients have felt the same way. What they found was...'",
@@ -109,12 +160,12 @@ export const proTips = [
   },
   {
     category: "Sales Technique",
-    tip: "Ask open-ended questions that start with 'What', 'How', or 'Tell me about' to keep the conversation flowing and uncover real needs.",
+    tip: "Ask open-ended questions starting with 'What', 'How', or 'Tell me about' to uncover the real needs behind the loan request.",
     icon: "lightbulb"
   },
   {
     category: "Sales Technique",
-    tip: "Mirror your client's communication style. Fast talkers want efficiency; deliberate speakers want details. Adapt accordingly.",
+    tip: "Mirror your client's communication style. Fast talkers want efficiency; deliberate speakers want details. Adapt your pace accordingly.",
     icon: "lightbulb"
   },
   {
@@ -124,63 +175,40 @@ export const proTips = [
   },
   {
     category: "Sales Technique",
-    tip: "Create urgency authentically: 'With rates fluctuating, locking in now protects you from potential increases. Let's secure your rate today.'",
+    tip: "Create authentic urgency: 'With rates fluctuating daily, locking in now protects you from potential increases. Let's secure your rate today.'",
     icon: "lightbulb"
   },
-  {
-    category: "Best Practice",
-    tip: "Follow up within 5 minutes of receiving a lead. Response time is the #1 factor in lead conversion.",
-    icon: "star"
-  },
-  {
-    category: "Best Practice",
-    tip: "After every call, send a brief summary email. This builds trust and provides documentation both parties can reference.",
-    icon: "star"
-  },
-  {
-    category: "Best Practice",
-    tip: "Schedule your follow-ups immediately after each call. Don't let hot leads go cold.",
-    icon: "star"
-  },
-  {
-    category: "Best Practice",
-    tip: "Keep detailed notes in your CRM. The next conversation should pick up right where you left off.",
-    icon: "star"
-  },
-  {
-    category: "Best Practice",
-    tip: "Block your first hour for prospecting calls. Your energy is highest in the morning - use it to create new opportunities.",
-    icon: "star"
-  },
-  {
-    category: "Best Practice",
-    tip: "End every call with a clear next step. Never hang up without a scheduled follow-up or action item.",
-    icon: "star"
-  },
-  {
-    category: "Rapport Building",
-    tip: "Spend the first 2-3 minutes in genuine small talk. People buy from people they like and trust.",
-    icon: "users"
-  },
-  {
-    category: "Rapport Building",
-    tip: "Use the client's name 3-4 times during the conversation. It creates connection and shows you're paying attention.",
-    icon: "users"
-  },
-  {
-    category: "Rapport Building",
-    tip: "Listen more than you talk. The 80/20 rule applies: Let clients speak 80% of the time.",
-    icon: "users"
-  },
+  // Closing & Follow-up
   {
     category: "Closing",
-    tip: "Trial close throughout: 'How does that sound so far?' This helps you gauge interest and address concerns early.",
+    tip: "Trial close throughout the conversation: 'How does that sound so far?' This gauges interest and surfaces concerns early.",
     icon: "target"
   },
   {
     category: "Closing",
-    tip: "Offer choices, not decisions: 'Would you prefer the 15-year or 30-year term?' This assumes the sale and moves forward.",
+    tip: "Offer choices, not decisions: 'Would you prefer the 15-year or 30-year term?' This assumes the sale and keeps momentum.",
     icon: "target"
+  },
+  {
+    category: "Closing",
+    tip: "End every call with a clear next step. Never hang up without a scheduled follow-up or specific action item for both parties.",
+    icon: "target"
+  },
+  {
+    category: "Closing",
+    tip: "After every call, send a brief summary email. This builds trust, provides documentation, and keeps you top-of-mind.",
+    icon: "target"
+  },
+  // Mindset for Small Brokerages
+  {
+    category: "Mindset",
+    tip: "You will face rejection daily — from clients, banks, even real estate agents. Don't take it personally. Keep a professional mindset and move forward.",
+    icon: "shield"
+  },
+  {
+    category: "Mindset",
+    tip: "Block your first hour for prospecting calls. Your energy is highest in the morning — use it to create new opportunities.",
+    icon: "star"
   }
 ];
 
