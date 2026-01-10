@@ -125,19 +125,19 @@ export function ContestedGroup({ brokers, rotationInterval = 8000 }: ContestedGr
   const { contestedGroup, contestedScore } = findContestedGroup();
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-3 shadow-sm">
+    <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 shadow-sm h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-3 flex-shrink-0">
         <div className={cn(
           "flex items-center gap-2 transition-opacity duration-300",
           isTransitioning ? "opacity-0" : "opacity-100"
         )}>
-          <Flame className="h-4 w-4 text-orange-500" />
-          <h3 className="font-semibold text-base text-white">Hot Competition ... LOCK IN!</h3>
+          <Flame className="h-5 w-5 text-orange-500" />
+          <h3 className="font-semibold text-lg text-white">Hot Competition ... LOCK IN!</h3>
         </div>
 
         {/* Metric dots indicator */}
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           {metrics.map((metric) => (
             <button
               key={metric}
@@ -149,7 +149,7 @@ export function ContestedGroup({ brokers, rotationInterval = 8000 }: ContestedGr
                 }, 300);
               }}
               className={cn(
-                "w-2 h-2 rounded-full transition-all",
+                "w-2.5 h-2.5 rounded-full transition-all",
                 currentMetric === metric
                   ? metricConfig[metric].dotColor
                   : "bg-gray-600 hover:bg-gray-500"
@@ -161,56 +161,51 @@ export function ContestedGroup({ brokers, rotationInterval = 8000 }: ContestedGr
 
       {/* Content */}
       <div className={cn(
-        "transition-all duration-300",
+        "flex-1 flex flex-col transition-all duration-300",
         isTransitioning ? "opacity-0 transform translate-x-4" : "opacity-100 transform translate-x-0"
       )}>
         {contestedGroup.length > 0 ? (
           <>
             {/* Score badge */}
             <div className={cn(
-              "flex items-center justify-center gap-2 py-2 px-3 rounded-lg mb-2",
+              "flex items-center justify-center gap-3 py-3 px-4 rounded-xl mb-3 flex-shrink-0",
               config.bgColor
             )}>
-              <MetricIcon className={cn("h-4 w-4", config.color)} />
-              <span className="text-white font-medium text-sm">{config.title}</span>
-              <span className={cn("text-xl font-bold", config.color)}>
+              <MetricIcon className={cn("h-6 w-6", config.color)} />
+              <span className="text-white font-semibold text-lg">{config.title}</span>
+              <span className={cn("text-3xl font-bold", config.color)}>
                 {contestedScore}
               </span>
             </div>
 
             {/* Competing brokers */}
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
+            <div className="flex-1 flex flex-col min-h-0">
+              <p className="text-sm text-gray-400 uppercase tracking-wider mb-3 flex-shrink-0">
                 {contestedGroup.length} brokers tied
               </p>
-              <div className="grid grid-cols-2 gap-1.5">
-                {contestedGroup.slice(0, 6).map((broker) => (
+              <div className="grid grid-cols-2 gap-2 flex-1 content-start overflow-hidden">
+                {contestedGroup.map((broker) => (
                   <div
                     key={broker.userId}
-                    className="flex items-center gap-1.5 p-1.5 rounded-lg bg-gray-800/50 border border-gray-700"
+                    className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-800/50 border border-gray-700"
                   >
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center flex-shrink-0">
-                      <span className="text-white font-bold text-[10px]">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center flex-shrink-0">
+                      <span className="text-white font-bold text-sm">
                         {broker.userName.split(' ').map(n => n[0]).join('')}
                       </span>
                     </div>
-                    <span className="text-xs text-white truncate flex-1">
+                    <span className="text-base text-white truncate flex-1 font-medium">
                       {broker.userName.split(' ')[0]}
                     </span>
                   </div>
                 ))}
               </div>
-              {contestedGroup.length > 6 && (
-                <p className="text-xs text-gray-500 text-center mt-1">
-                  +{contestedGroup.length - 6} more
-                </p>
-              )}
             </div>
           </>
         ) : (
-          <div className="text-center py-4 text-gray-500">
-            <Users className="h-8 w-8 mx-auto mb-1 opacity-20" />
-            <p className="text-sm">No competition data yet</p>
+          <div className="text-center py-8 text-gray-500 flex-1 flex flex-col items-center justify-center">
+            <Users className="h-12 w-12 mx-auto mb-2 opacity-20" />
+            <p className="text-base">No competition data yet</p>
           </div>
         )}
       </div>

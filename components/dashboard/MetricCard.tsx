@@ -14,6 +14,7 @@ interface MetricCardProps {
   };
   color?: "blue" | "green" | "purple" | "orange" | "cyan" | "pink";
   size?: "default" | "large";
+  compact?: boolean; // Hides subtitle and uses larger, inline display
 }
 
 const colorStyles = {
@@ -69,8 +70,43 @@ export function MetricCard({
   trend,
   color = "blue",
   size = "default",
+  compact = false,
 }: MetricCardProps) {
   const styles = colorStyles[color];
+
+  // Compact mode: Large number + title inline, no subtitle
+  if (compact) {
+    return (
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-xl border bg-gray-900/80 shadow-sm transition-all hover:shadow-lg p-3",
+          styles.border
+        )}
+      >
+        {/* Background gradient */}
+        <div className={cn(
+          "absolute top-0 right-0 w-24 h-24 opacity-10 rounded-full blur-2xl",
+          `bg-gradient-to-br ${styles.gradient}`
+        )} />
+
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-baseline gap-2">
+            <h3 className="font-bold text-3xl tracking-tight text-white">
+              {value.toLocaleString()}
+            </h3>
+            <p className="text-sm font-medium text-gray-400">{title}</p>
+          </div>
+
+          <div className={cn(
+            "flex items-center justify-center rounded-lg p-2",
+            styles.iconBg
+          )}>
+            <Icon className="h-5 w-5 text-white" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

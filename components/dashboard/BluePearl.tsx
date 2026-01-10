@@ -6,15 +6,26 @@ interface BluePearlProps {
   current: number;
   goal?: number;
   label?: string;
+  size?: "default" | "large";
 }
 
-export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal" }: BluePearlProps) {
+export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal", size = "default" }: BluePearlProps) {
+  const isLarge = size === "large";
   const percentage = Math.min((current / goal) * 100, 100);
   const isComplete = percentage >= 100;
 
+  // Size configurations
+  const pearlSize = isLarge ? "w-32 h-32" : "w-20 h-20";
+  const progressBarWidth = isLarge ? "w-32" : "w-20";
+  const labelSize = isLarge ? "text-sm" : "text-xs";
+  const numberSize = isLarge ? "text-3xl" : "text-xl";
+  const goalSize = isLarge ? "text-sm" : "text-[10px]";
+  const shineSize1 = isLarge ? "w-6 h-6 top-2 left-5" : "w-4 h-4 top-1.5 left-3";
+  const shineSize2 = isLarge ? "w-3 h-3 top-5 left-6" : "w-2 h-2 top-3 left-4";
+
   return (
-    <div className="flex flex-col items-center gap-1.5 p-1">
-      <span className="text-xs font-medium text-gray-400">{label}</span>
+    <div className={cn("flex flex-col items-center p-1", isLarge ? "gap-3" : "gap-1.5")}>
+      <span className={cn("font-medium text-gray-400", labelSize)}>{label}</span>
 
       {/* Pearl Container */}
       <div className="relative">
@@ -30,7 +41,7 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal" }
         />
 
         {/* Outer ring */}
-        <div className="relative w-20 h-20 rounded-full border-2 border-blue-200 dark:border-blue-900 p-0.5">
+        <div className={cn("relative rounded-full border-2 border-blue-200 dark:border-blue-900 p-0.5", pearlSize)}>
           {/* Pearl body */}
           <div className="relative w-full h-full rounded-full bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-950 dark:to-slate-900 overflow-hidden shadow-inner">
             {/* Water fill effect */}
@@ -72,19 +83,21 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal" }
             </div>
 
             {/* Pearl shine */}
-            <div className="absolute top-1.5 left-3 w-4 h-4 rounded-full bg-white/40 blur-sm" />
-            <div className="absolute top-3 left-4 w-2 h-2 rounded-full bg-white/60" />
+            <div className={cn("absolute rounded-full bg-white/40 blur-sm", shineSize1)} />
+            <div className={cn("absolute rounded-full bg-white/60", shineSize2)} />
 
             {/* Center content */}
             <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
               <span className={cn(
-                "text-xl font-bold transition-colors",
+                "font-bold transition-colors",
+                numberSize,
                 percentage >= 50 ? "text-white drop-shadow-lg" : "text-blue-600 dark:text-blue-400"
               )}>
                 {current}
               </span>
               <span className={cn(
-                "text-[10px] transition-colors",
+                "transition-colors",
+                goalSize,
                 percentage >= 50 ? "text-white/80 drop-shadow" : "text-blue-500 dark:text-blue-300"
               )}>
                 / {goal}
@@ -105,7 +118,7 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal" }
 
       {/* Percentage label */}
       <div className="flex items-center gap-1.5">
-        <div className="w-20 h-1.5 rounded-full bg-blue-100 dark:bg-blue-900 overflow-hidden">
+        <div className={cn("h-1.5 rounded-full bg-blue-100 dark:bg-blue-900 overflow-hidden", progressBarWidth)}>
           <div
             className={cn(
               "h-full rounded-full transition-all duration-1000",
@@ -116,14 +129,15 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal" }
             style={{ width: `${percentage}%` }}
           />
         </div>
-        <span className="text-xs font-medium text-blue-600 dark:text-blue-400 min-w-[2.5rem]">
+        <span className={cn("font-medium text-blue-600 dark:text-blue-400 min-w-[2.5rem]", labelSize)}>
           {Math.round(percentage)}%
         </span>
       </div>
 
       {/* Status message */}
       <span className={cn(
-        "text-[10px] font-medium",
+        "font-medium",
+        isLarge ? "text-sm" : "text-[10px]",
         isComplete ? "text-green-500" : "text-gray-400"
       )}>
         {isComplete ? "Goal Achieved!" : `${goal - current} more to go`}

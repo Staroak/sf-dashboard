@@ -10,6 +10,7 @@ interface StatsSectionProps {
   applicationsTaken: number;
   appraisalsOrdered: number;
   submissions: number;
+  compact?: boolean; // Removes subtitles and uses inline layout
 }
 
 export function StatsSection({
@@ -19,6 +20,7 @@ export function StatsSection({
   applicationsTaken,
   appraisalsOrdered,
   submissions,
+  compact = false,
 }: StatsSectionProps) {
   const isDaily = period === "Daily";
 
@@ -37,30 +39,34 @@ export function StatsSection({
         <MetricCard
           title="Contacts Made"
           value={contactsMade}
-          subtitle="Answered calls"
+          subtitle={compact ? undefined : "Answered calls"}
           icon={Phone}
           color="blue"
+          compact={compact}
         />
         <MetricCard
           title="Applications"
           value={applicationsTaken}
-          subtitle="New applications"
+          subtitle={compact ? undefined : "New applications"}
           icon={FileText}
           color="green"
+          compact={compact}
         />
         <MetricCard
           title="Appraisals"
           value={appraisalsOrdered}
-          subtitle="Orders placed"
+          subtitle={compact ? undefined : "Orders placed"}
           icon={Home}
           color="purple"
+          compact={compact}
         />
         <MetricCard
           title="Submissions"
           value={submissions}
-          subtitle="To lenders"
+          subtitle={compact ? undefined : "To lenders"}
           icon={Send}
           color="orange"
+          compact={compact}
         />
       </div>
     </div>

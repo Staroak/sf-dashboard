@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { RefreshCw, Wifi, WifiOff } from "lucide-react";
+import { RefreshCw, Wifi, WifiOff, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { StatsSection } from "./StatsSection";
-import { RotatingLeaderboard } from "./RotatingLeaderboard";
-import { ContestedGroup } from "./ContestedGroup";
-import { BluePearl } from "./BluePearl";
-import { QuoteSidebar } from "./QuoteSidebar";
+import { ApplicationsPage } from "./ApplicationsPage";
+import { AppraisalsPage } from "./AppraisalsPage";
+import { SubmissionsPage } from "./SubmissionsPage";
+import { SummaryPage } from "./SummaryPage";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface BrokerStats {
   userId: string;
@@ -42,7 +42,17 @@ interface DashboardData {
 }
 
 const REFRESH_INTERVAL = 10000; // 10 seconds
-const DAILY_GOAL = 33; // change text in line 221/222
+const PAGE_ROTATION_INTERVAL = 90000; // 1.5 minutes per page
+
+const PAGES = ["applications", "appraisals", "submissions", "summary"] as const;
+type PageType = typeof PAGES[number];
+
+const PAGE_LABELS: Record<PageType, string> = {
+  applications: "Applications",
+  appraisals: "Appraisals",
+  submissions: "Submissions",
+  summary: "Summary",
+};
 
 export function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -51,6 +61,8 @@ export function Dashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  const [currentPage, setCurrentPage] = useState<PageType>("applications");
+  const [isPaused, setIsPaused] = useState(false);
 
   const fetchData = useCallback(async (isManual = false) => {
     if (isManual) {
@@ -58,7 +70,6 @@ export function Dashboard() {
     }
 
     try {
-      // Add cache-busting timestamp to prevent any caching
       const response = await fetch(`/api/dashboard?t=${Date.now()}`, {
         cache: 'no-store',
         headers: {
@@ -91,6 +102,21 @@ export function Dashboard() {
     return () => clearInterval(interval);
   }, [fetchData]);
 
+  // Page rotation
+  useEffect(() => {
+    if (isPaused) return;
+
+    const interval = setInterval(() => {
+      setCurrentPage((prev) => {
+        const currentIndex = PAGES.indexOf(prev);
+        const nextIndex = (currentIndex + 1) % PAGES.length;
+        return PAGES[nextIndex];
+      });
+    }, PAGE_ROTATION_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [isPaused]);
+
   // Online/offline detection
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -104,6 +130,20 @@ export function Dashboard() {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  const goToPrevPage = () => {
+    const currentIndex = PAGES.indexOf(currentPage);
+    const prevIndex = (currentIndex - 1 + PAGES.length) % PAGES.length;
+    setCurrentPage(PAGES[prevIndex]);
+    setIsPaused(true);
+  };
+
+  const goToNextPage = () => {
+    const currentIndex = PAGES.indexOf(currentPage);
+    const nextIndex = (currentIndex + 1) % PAGES.length;
+    setCurrentPage(PAGES[nextIndex]);
+    setIsPaused(true);
+  };
 
   // Get broker stats from monthly data for leaderboards
   const monthlyBrokers: BrokerStats[] = data?.monthly.salesMetrics?.byBroker || data?.leaderboard || [];
@@ -123,7 +163,7 @@ export function Dashboard() {
 
   if (loading && !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-black dark:bg-black">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
           <p className="text-gray-400">Loading dashboard...</p>
@@ -132,11 +172,61 @@ export function Dashboard() {
     );
   }
 
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case "applications":
+        return (
+          <ApplicationsPage
+            dailyContacts={data?.daily.contactsMade || 0}
+            dailyApplications={data?.daily.applicationsTaken || 0}
+            monthlyApplications={data?.monthly.applicationsTaken || 0}
+            brokers={monthlyBrokers}
+          />
+        );
+      case "appraisals":
+        return (
+          <AppraisalsPage
+            dailyContacts={data?.daily.contactsMade || 0}
+            dailyAppraisals={data?.daily.appraisalsOrdered || 0}
+            monthlyAppraisals={data?.monthly.appraisalsOrdered || 0}
+            brokers={monthlyBrokers}
+          />
+        );
+      case "submissions":
+        return (
+          <SubmissionsPage
+            dailyContacts={data?.daily.contactsMade || 0}
+            dailySubmissions={data?.daily.submissions || 0}
+            monthlySubmissions={data?.monthly.submissions || 0}
+            brokers={monthlyBrokers}
+          />
+        );
+      case "summary":
+        return (
+          <SummaryPage
+            daily={{
+              contactsMade: data?.daily.contactsMade || 0,
+              applicationsTaken: data?.daily.applicationsTaken || 0,
+              appraisalsOrdered: data?.daily.appraisalsOrdered || 0,
+              submissions: data?.daily.submissions || 0,
+            }}
+            monthly={{
+              contactsMade: data?.monthly.contactsMade || 0,
+              applicationsTaken: data?.monthly.applicationsTaken || 0,
+              appraisalsOrdered: data?.monthly.appraisalsOrdered || 0,
+              submissions: data?.monthly.submissions || 0,
+            }}
+            brokers={monthlyBrokers}
+          />
+        );
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="h-screen max-h-screen bg-black dark:bg-black text-white dark:text-white flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-gray-800 bg-gray-950/95 backdrop-blur supports-[backdrop-filter]:bg-gray-950/60">
-        <div className="container mx-auto px-4 py-2">
+      <header className="flex-shrink-0 border-b border-gray-800 bg-gray-950/95 backdrop-blur supports-[backdrop-filter]:bg-gray-950/60">
+        <div className="container mx-auto px-4 py-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Logo/Brand */}
@@ -151,6 +241,59 @@ export function Dashboard() {
                   <p className="text-xs text-muted-foreground">Sales Dashboard</p>
                 </div>
               </div>
+            </div>
+
+            {/* Page Navigation */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={goToPrevPage}
+                className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+
+              {/* Page Indicators */}
+              <div className="flex items-center gap-2">
+                {PAGES.map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => {
+                      setCurrentPage(page);
+                      setIsPaused(true);
+                    }}
+                    className={cn(
+                      "px-3 py-1 rounded-full text-sm font-medium transition-all",
+                      currentPage === page
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                    )}
+                  >
+                    {PAGE_LABELS[page]}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={goToNextPage}
+                className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+                aria-label="Next page"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+
+              {/* Pause/Resume Button */}
+              <button
+                onClick={() => setIsPaused(!isPaused)}
+                className={cn(
+                  "px-3 py-1 rounded-full text-sm font-medium transition-all ml-2",
+                  isPaused
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-800 text-gray-400"
+                )}
+              >
+                {isPaused ? "Resume" : "Auto"}
+              </button>
             </div>
 
             {/* Status and Time */}
@@ -192,77 +335,31 @@ export function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-3">
-        <div className="grid grid-cols-12 gap-4">
-          {/* Main Stats Area - 9 columns */}
-          <div className="col-span-12 lg:col-span-9 space-y-3">
-            {/* Daily Stats */}
-            <StatsSection
-              title="Today's Performance"
-              period="Daily"
-              contactsMade={data?.daily.contactsMade || 0}
-              applicationsTaken={data?.daily.applicationsTaken || 0}
-              appraisalsOrdered={data?.daily.appraisalsOrdered || 0}
-              submissions={data?.daily.submissions || 0}
-            />
-
-            {/* Monthly Stats */}
-            <StatsSection
-              title="Monthly Performance"
-              period="Monthly"
-              contactsMade={data?.monthly.contactsMade || 0}
-              applicationsTaken={data?.monthly.applicationsTaken || 0}
-              appraisalsOrdered={data?.monthly.appraisalsOrdered || 0}
-              submissions={data?.monthly.submissions || 0}
-            />
-
-            {/* Bottom Section: Rotating Leaderboards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Rotating Top 5 Leaders */}
-              <RotatingLeaderboard
-                brokers={monthlyBrokers}
-                rotationInterval={8000}
-              />
-
-              {/* Contested Group - Shows tied brokers */}
-              <ContestedGroup
-                brokers={monthlyBrokers}
-                rotationInterval={8000}
-              />
-            </div>
-          </div>
-
-          {/* Sidebar - 3 columns */}
-          <aside className="col-span-12 lg:col-span-3">
-            <div className="sticky top-20">
-              <QuoteSidebar />
-
-              {/* Daily Goal Tracker - moved under quotes */}
-              <div className="mt-3 rounded-xl border border-gray-800 bg-gray-900/80 p-3 shadow-sm flex flex-col items-center justify-center">
-                <BluePearl
-                  current={data?.daily.applicationsTaken || 0}
-                  goal={DAILY_GOAL}
-                  label="Daily Applications Goal"
-                />
-              </div>
-
-              {/* Last Updated */}
-              {lastUpdated && (
-                <p className="text-xs text-muted-foreground text-center mt-2">
-                  Last updated: {lastUpdated.toLocaleTimeString()}
-                </p>
-              )}
-
-              {/* Error Message */}
-              {error && (
-                <div className="mt-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 text-sm">
-                  {error}
-                </div>
-              )}
-            </div>
-          </aside>
+      <main className="flex-1 min-h-0 overflow-hidden">
+        <div
+          key={currentPage}
+          className="h-full animate-fadeIn"
+        >
+          {renderCurrentPage()}
         </div>
       </main>
+
+      {/* Error Message */}
+      {error && (
+        <div className="fixed bottom-16 left-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 text-sm">
+          {error}
+        </div>
+      )}
+
+      {/* Last Updated */}
+      {lastUpdated && (
+        <div className="fixed bottom-4 left-4 text-xs text-muted-foreground">
+          Last updated: {lastUpdated.toLocaleTimeString()}
+        </div>
+      )}
+
+      {/* Theme Toggle */}
+      <ThemeToggle />
     </div>
   );
 }
