@@ -29,7 +29,7 @@ const metricConfig: Record<MetricType, {
   dotColor: string;
 }> = {
   applications: {
-    title: "Top Applications",
+    title: "Top Applications of the Month",
     key: "applicationsTaken",
     icon: FileText,
     color: "text-green-500",
@@ -37,7 +37,7 @@ const metricConfig: Record<MetricType, {
     dotColor: "bg-green-500"
   },
   appraisals: {
-    title: "Top Appraisals",
+    title: "Top Appraisals of the Month",
     key: "appraisalsOrdered",
     icon: ClipboardCheck,
     color: "text-purple-500",
@@ -45,7 +45,7 @@ const metricConfig: Record<MetricType, {
     dotColor: "bg-purple-500"
   },
   submissions: {
-    title: "Top Submissions",
+    title: "Top Submissions of the Month",
     key: "submissions",
     icon: Send,
     color: "text-orange-500",
@@ -93,7 +93,7 @@ export function RotatingLeaderboard({ brokers, rotationInterval = 8000 }: Rotati
   const maxScore = Math.max(...sortedBrokers.map(b => b[config.key] as number), 1);
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 shadow-sm h-full flex flex-col">
+    <div className="rounded-xl border border-border bg-card/80 p-4 shadow-sm h-full flex flex-col">
       {/* Header with metric indicator */}
       <div className="flex items-center justify-between mb-3 flex-shrink-0">
         <div className={cn(
@@ -101,7 +101,7 @@ export function RotatingLeaderboard({ brokers, rotationInterval = 8000 }: Rotati
           isTransitioning ? "opacity-0" : "opacity-100"
         )}>
           <MetricIcon className={cn("h-5 w-5", config.color)} />
-          <h3 className="font-semibold text-lg text-white">{config.title}</h3>
+          <h3 className="font-semibold text-lg text-foreground">{config.title}</h3>
         </div>
 
         {/* Metric dots indicator */}
@@ -120,7 +120,7 @@ export function RotatingLeaderboard({ brokers, rotationInterval = 8000 }: Rotati
                 "w-2.5 h-2.5 rounded-full transition-all",
                 currentMetric === metric
                   ? metricConfig[metric].dotColor
-                  : "bg-gray-600 hover:bg-gray-500"
+                  : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
               )}
             />
           ))}
@@ -146,7 +146,7 @@ export function RotatingLeaderboard({ brokers, rotationInterval = 8000 }: Rotati
                 index === 0 && "bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border-yellow-500/30",
                 index === 1 && "bg-gradient-to-r from-gray-400/10 to-slate-400/10 border-gray-400/30",
                 index === 2 && "bg-gradient-to-r from-amber-600/10 to-orange-600/10 border-amber-600/30",
-                index > 2 && "bg-gray-800/50 border-gray-700"
+                index > 2 && "bg-muted/50 border-border"
               )}
             >
               {/* Rank badge */}
@@ -168,16 +168,16 @@ export function RotatingLeaderboard({ brokers, rotationInterval = 8000 }: Rotati
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <span className={cn(
-                    "font-semibold truncate text-xl text-white",
-                    index === 0 && "text-yellow-400"
+                    "font-semibold truncate text-xl text-foreground",
+                    index === 0 && "text-yellow-500 dark:text-yellow-400"
                   )}>
                     {broker.userName}
                   </span>
-                  <span className="font-bold text-2xl text-white ml-2 tabular-nums">{score}</span>
+                  <span className="font-bold text-2xl text-foreground ml-2 tabular-nums">{score}</span>
                 </div>
 
                 {/* Progress bar */}
-                <div className="h-2 rounded-full bg-gray-700 overflow-hidden mt-1">
+                <div className="h-2 rounded-full bg-muted overflow-hidden mt-1">
                   <div
                     className={cn(
                       "h-full rounded-full transition-all duration-500",
@@ -195,7 +195,7 @@ export function RotatingLeaderboard({ brokers, rotationInterval = 8000 }: Rotati
         })}
 
         {sortedBrokers.length === 0 && (
-          <div className="text-center py-8 text-gray-500 flex-1 flex flex-col items-center justify-center">
+          <div className="text-center py-8 text-muted-foreground flex-1 flex flex-col items-center justify-center">
             <MetricIcon className="h-12 w-12 mx-auto mb-2 opacity-20" />
             <p className="text-base">No data available yet</p>
           </div>

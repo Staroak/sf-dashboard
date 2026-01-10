@@ -25,7 +25,7 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal", 
 
   return (
     <div className={cn("flex flex-col items-center p-1", isLarge ? "gap-3" : "gap-1.5")}>
-      <span className={cn("font-medium text-gray-400", labelSize)}>{label}</span>
+      <span className={cn("font-medium text-muted-foreground", labelSize)}>{label}</span>
 
       {/* Pearl Container */}
       <div className="relative">
@@ -138,7 +138,7 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal", 
       <span className={cn(
         "font-medium",
         isLarge ? "text-sm" : "text-[10px]",
-        isComplete ? "text-green-500" : "text-gray-400"
+        isComplete ? "text-green-500" : "text-muted-foreground"
       )}>
         {isComplete ? "Goal Achieved!" : `${goal - current} more to go`}
       </span>

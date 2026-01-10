@@ -84,7 +84,7 @@ export function QuoteSidebar() {
   return (
     <div className="flex flex-col gap-3 h-full">
       {/* Motivational Quote - flex-1 to share space equally */}
-      <div className="rounded-xl border border-gray-800 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 p-3 relative overflow-hidden flex-1 flex flex-col">
+      <div className="rounded-xl border border-border bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 p-3 relative overflow-hidden flex-1 flex flex-col">
         {/* Decorative element */}
         <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/20 rounded-full blur-2xl" />
 
@@ -101,22 +101,22 @@ export function QuoteSidebar() {
           "transition-opacity duration-500 flex-1 flex flex-col justify-center",
           isQuoteFading ? "opacity-0" : "opacity-100"
         )}>
-          <blockquote className="text-sm italic text-gray-200 leading-relaxed mb-1">
+          <blockquote className="text-sm italic text-foreground/90 leading-relaxed mb-1">
             &ldquo;{currentQuote.quote}&rdquo;
           </blockquote>
-          <cite className="text-sm text-gray-400 not-italic">
+          <cite className="text-sm text-muted-foreground not-italic">
             — {currentQuote.author}
           </cite>
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-gray-700/50 flex-shrink-0">
+        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/50 flex-shrink-0">
           <button
             onClick={prevQuote}
-            className="p-0.5 rounded hover:bg-gray-800 transition-colors"
+            className="p-0.5 rounded hover:bg-accent transition-colors"
             aria-label="Previous quote"
           >
-            <ChevronLeft className="h-3 w-3 text-gray-400" />
+            <ChevronLeft className="h-3 w-3 text-muted-foreground" />
           </button>
           <div className="flex gap-1">
             {[0, 1, 2].map((i) => (
@@ -124,23 +124,23 @@ export function QuoteSidebar() {
                 key={i}
                 className={cn(
                   "w-1 h-1 rounded-full transition-colors",
-                  currentQuoteIndex % 3 === i ? "bg-blue-500" : "bg-gray-600"
+                  currentQuoteIndex % 3 === i ? "bg-blue-500" : "bg-muted-foreground/30"
                 )}
               />
             ))}
           </div>
           <button
             onClick={nextQuote}
-            className="p-0.5 rounded hover:bg-gray-800 transition-colors"
+            className="p-0.5 rounded hover:bg-accent transition-colors"
             aria-label="Next quote"
           >
-            <ChevronRight className="h-3 w-3 text-gray-400" />
+            <ChevronRight className="h-3 w-3 text-muted-foreground" />
           </button>
         </div>
       </div>
 
       {/* Pro Tip - flex-1 to share space equally */}
-      <div className="rounded-xl border border-gray-800 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 p-3 relative overflow-hidden flex-1 flex flex-col">
+      <div className="rounded-xl border border-border bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 p-3 relative overflow-hidden flex-1 flex flex-col">
         {/* Decorative element */}
         <div className="absolute bottom-0 left-0 w-16 h-16 bg-amber-500/20 rounded-full blur-2xl" />
 
@@ -157,19 +157,19 @@ export function QuoteSidebar() {
           "transition-opacity duration-500 flex-1 flex flex-col justify-center",
           isTipFading ? "opacity-0" : "opacity-100"
         )}>
-          <p className="text-sm text-gray-200 leading-relaxed">
+          <p className="text-sm text-foreground/90 leading-relaxed">
             {currentTip.tip}
           </p>
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-gray-700/50 flex-shrink-0">
+        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/50 flex-shrink-0">
           <button
             onClick={prevTip}
-            className="p-0.5 rounded hover:bg-gray-800 transition-colors"
+            className="p-0.5 rounded hover:bg-accent transition-colors"
             aria-label="Previous tip"
           >
-            <ChevronLeft className="h-3 w-3 text-gray-400" />
+            <ChevronLeft className="h-3 w-3 text-muted-foreground" />
           </button>
           <div className="flex gap-1">
             {[0, 1, 2].map((i) => (
@@ -177,17 +177,17 @@ export function QuoteSidebar() {
                 key={i}
                 className={cn(
                   "w-1 h-1 rounded-full transition-colors",
-                  currentTipIndex % 3 === i ? "bg-amber-500" : "bg-gray-600"
+                  currentTipIndex % 3 === i ? "bg-amber-500" : "bg-muted-foreground/30"
                 )}
               />
             ))}
           </div>
           <button
             onClick={nextTip}
-            className="p-0.5 rounded hover:bg-gray-800 transition-colors"
+            className="p-0.5 rounded hover:bg-accent transition-colors"
             aria-label="Next tip"
           >
-            <ChevronRight className="h-3 w-3 text-gray-400" />
+            <ChevronRight className="h-3 w-3 text-muted-foreground" />
           </button>
         </div>
       </div>

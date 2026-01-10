@@ -84,7 +84,7 @@ export function QuoteDisplay({ category, className }: QuoteDisplayProps) {
 
   return (
     <div className={cn(
-      "rounded-xl border border-gray-800 bg-gray-900/80 p-4 flex items-center justify-center",
+      "rounded-xl border border-border bg-card/80 p-4 flex items-center justify-center",
       className
     )}>
       <p className={cn(

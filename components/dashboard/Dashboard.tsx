@@ -145,7 +145,8 @@ export function Dashboard() {
     setIsPaused(true);
   };
 
-  // Get broker stats from monthly data for leaderboards
+  // Get broker stats for leaderboards
+  const dailyBrokers: BrokerStats[] = data?.daily.salesMetrics?.byBroker || [];
   const monthlyBrokers: BrokerStats[] = data?.monthly.salesMetrics?.byBroker || data?.leaderboard || [];
 
   // Get current time formatted
@@ -163,10 +164,10 @@ export function Dashboard() {
 
   if (loading && !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black dark:bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
-          <p className="text-gray-400">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -180,7 +181,7 @@ export function Dashboard() {
             dailyContacts={data?.daily.contactsMade || 0}
             dailyApplications={data?.daily.applicationsTaken || 0}
             monthlyApplications={data?.monthly.applicationsTaken || 0}
-            brokers={monthlyBrokers}
+            brokers={dailyBrokers}
           />
         );
       case "appraisals":
@@ -189,7 +190,7 @@ export function Dashboard() {
             dailyContacts={data?.daily.contactsMade || 0}
             dailyAppraisals={data?.daily.appraisalsOrdered || 0}
             monthlyAppraisals={data?.monthly.appraisalsOrdered || 0}
-            brokers={monthlyBrokers}
+            brokers={dailyBrokers}
           />
         );
       case "submissions":
@@ -198,7 +199,7 @@ export function Dashboard() {
             dailyContacts={data?.daily.contactsMade || 0}
             dailySubmissions={data?.daily.submissions || 0}
             monthlySubmissions={data?.monthly.submissions || 0}
-            brokers={monthlyBrokers}
+            brokers={dailyBrokers}
           />
         );
       case "summary":
@@ -223,9 +224,9 @@ export function Dashboard() {
   };
 
   return (
-    <div className="h-screen max-h-screen bg-black dark:bg-black text-white dark:text-white flex flex-col overflow-hidden">
+    <div className="h-screen max-h-screen bg-background text-foreground flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="flex-shrink-0 border-b border-gray-800 bg-gray-950/95 backdrop-blur supports-[backdrop-filter]:bg-gray-950/60">
+      <header className="flex-shrink-0 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container mx-auto px-4 py-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -237,7 +238,7 @@ export function Dashboard() {
                   className="w-8 h-8 rounded-lg object-contain"
                 />
                 <div>
-                  <h1 className="font-bold text-lg">Blue Pearl Mortgage</h1>
+                  <h1 className="font-bold text-lg text-foreground">Blue Pearl Mortgage</h1>
                   <p className="text-xs text-muted-foreground">Sales Dashboard</p>
                 </div>
               </div>
@@ -247,7 +248,7 @@ export function Dashboard() {
             <div className="flex items-center gap-2">
               <button
                 onClick={goToPrevPage}
-                className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+                className="p-2 rounded-lg hover:bg-accent transition-colors"
                 aria-label="Previous page"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -265,8 +266,8 @@ export function Dashboard() {
                     className={cn(
                       "px-3 py-1 rounded-full text-sm font-medium transition-all",
                       currentPage === page
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground hover:bg-accent"
                     )}
                   >
                     {PAGE_LABELS[page]}
@@ -276,7 +277,7 @@ export function Dashboard() {
 
               <button
                 onClick={goToNextPage}
-                className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+                className="p-2 rounded-lg hover:bg-accent transition-colors"
                 aria-label="Next page"
               >
                 <ChevronRight className="h-5 w-5" />
@@ -289,7 +290,7 @@ export function Dashboard() {
                   "px-3 py-1 rounded-full text-sm font-medium transition-all ml-2",
                   isPaused
                     ? "bg-green-600 text-white"
-                    : "bg-gray-800 text-gray-400"
+                    : "bg-secondary text-secondary-foreground"
                 )}
               >
                 {isPaused ? "Resume" : "Auto"}

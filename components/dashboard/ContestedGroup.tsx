@@ -125,7 +125,7 @@ export function ContestedGroup({ brokers, rotationInterval = 8000 }: ContestedGr
   const { contestedGroup, contestedScore } = findContestedGroup();
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 shadow-sm h-full flex flex-col">
+    <div className="rounded-xl border border-border bg-card/80 p-4 shadow-sm h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 flex-shrink-0">
         <div className={cn(
@@ -133,7 +133,7 @@ export function ContestedGroup({ brokers, rotationInterval = 8000 }: ContestedGr
           isTransitioning ? "opacity-0" : "opacity-100"
         )}>
           <Flame className="h-5 w-5 text-orange-500" />
-          <h3 className="font-semibold text-lg text-white">Hot Competition ... LOCK IN!</h3>
+          <h3 className="font-semibold text-lg text-foreground">Hot Competition ... LOCK IN!</h3>
         </div>
 
         {/* Metric dots indicator */}
@@ -152,7 +152,7 @@ export function ContestedGroup({ brokers, rotationInterval = 8000 }: ContestedGr
                 "w-2.5 h-2.5 rounded-full transition-all",
                 currentMetric === metric
                   ? metricConfig[metric].dotColor
-                  : "bg-gray-600 hover:bg-gray-500"
+                  : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
               )}
             />
           ))}
@@ -180,21 +180,21 @@ export function ContestedGroup({ brokers, rotationInterval = 8000 }: ContestedGr
 
             {/* Competing brokers */}
             <div className="flex-1 flex flex-col min-h-0">
-              <p className="text-sm text-gray-400 uppercase tracking-wider mb-3 flex-shrink-0">
+              <p className="text-sm text-muted-foreground uppercase tracking-wider mb-3 flex-shrink-0">
                 {contestedGroup.length} brokers tied
               </p>
               <div className="grid grid-cols-2 gap-2 flex-1 content-start overflow-hidden">
                 {contestedGroup.map((broker) => (
                   <div
                     key={broker.userId}
-                    className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-800/50 border border-gray-700"
+                    className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/50 border border-border"
                   >
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center flex-shrink-0">
                       <span className="text-white font-bold text-sm">
                         {broker.userName.split(' ').map(n => n[0]).join('')}
                       </span>
                     </div>
-                    <span className="text-base text-white truncate flex-1 font-medium">
+                    <span className="text-base text-foreground truncate flex-1 font-medium">
                       {broker.userName.split(' ')[0]}
                     </span>
                   </div>
@@ -203,7 +203,7 @@ export function ContestedGroup({ brokers, rotationInterval = 8000 }: ContestedGr
             </div>
           </>
         ) : (
-          <div className="text-center py-8 text-gray-500 flex-1 flex flex-col items-center justify-center">
+          <div className="text-center py-8 text-muted-foreground flex-1 flex flex-col items-center justify-center">
             <Users className="h-12 w-12 mx-auto mb-2 opacity-20" />
             <p className="text-base">No competition data yet</p>
           </div>

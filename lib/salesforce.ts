@@ -339,18 +339,23 @@ class SalesforceService {
   }
 
   // Combine broker stats from all four metrics
+  // If allBrokerNames is provided, include all brokers (even with 0 activity)
   private combineBrokerStats(
     contacts: Map<string, { name: string; count: number }>,
     applications: Map<string, { name: string; count: number }>,
     appraisals: Map<string, { name: string; count: number }>,
-    submissions: Map<string, { name: string; count: number }>
+    submissions: Map<string, { name: string; count: number }>,
+    allBrokerNames?: Map<string, string>
   ): BrokerStats[] {
-    const allBrokerIds = new Set([
-      ...contacts.keys(),
-      ...applications.keys(),
-      ...appraisals.keys(),
-      ...submissions.keys()
-    ]);
+    // If allBrokerNames provided, include all brokers; otherwise just those with activity
+    const allBrokerIds = allBrokerNames
+      ? new Set(allBrokerNames.keys())
+      : new Set([
+          ...contacts.keys(),
+          ...applications.keys(),
+          ...appraisals.keys(),
+          ...submissions.keys()
+        ]);
 
     const brokerStats: BrokerStats[] = [];
 
@@ -360,8 +365,8 @@ class SalesforceService {
       const apprData = appraisals.get(oderId);
       const subData = submissions.get(oderId);
 
-      // Get broker name from whichever map has it
-      const brokerName = contData?.name || appData?.name || apprData?.name || subData?.name || 'Unknown';
+      // Get broker name from allBrokerNames first, then from activity data
+      const brokerName = allBrokerNames?.get(oderId) || contData?.name || appData?.name || apprData?.name || subData?.name || 'Unknown';
 
       brokerStats.push({
         userId: oderId,
@@ -409,12 +414,13 @@ class SalesforceService {
     const monthlyAppraisals = await this.getAppraisalsCount(conn, 'monthly', brokerNames);
     const monthlySubmissions = await this.getSubmissionsCount(conn, 'monthly', brokerNames);
 
-    // Combine broker stats
+    // Combine broker stats - include all brokers for daily (even with 0 activity)
     const dailyBrokerStats = this.combineBrokerStats(
       dailyContacts.byBroker,
       dailyApplications.byBroker,
       dailyAppraisals.byBroker,
-      dailySubmissions.byBroker
+      dailySubmissions.byBroker,
+      brokerNames // Include all active users
     );
 
     const monthlyBrokerStats = this.combineBrokerStats(

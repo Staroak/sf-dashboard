@@ -89,7 +89,7 @@ export function SummaryPage({ daily, monthly, brokers }: SummaryPageProps) {
           </div>
 
           {/* Daily Goal Tracker - flex-1 to take half the space */}
-          <div className="rounded-xl border border-gray-800 bg-gray-900/80 p-4 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0">
+          <div className="rounded-xl border border-border bg-card/80 p-4 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0">
             <BluePearl
               current={daily.applicationsTaken}
               goal={DAILY_GOAL}

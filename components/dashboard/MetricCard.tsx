@@ -79,7 +79,7 @@ export function MetricCard({
     return (
       <div
         className={cn(
-          "relative overflow-hidden rounded-xl border bg-gray-900/80 shadow-sm transition-all hover:shadow-lg p-3",
+          "relative overflow-hidden rounded-xl border bg-card/80 shadow-sm transition-all hover:shadow-lg p-3",
           styles.border
         )}
       >
@@ -91,10 +91,10 @@ export function MetricCard({
 
         <div className="relative flex items-center justify-between">
           <div className="flex items-baseline gap-2">
-            <h3 className="font-bold text-3xl tracking-tight text-white">
+            <h3 className="font-bold text-3xl tracking-tight text-foreground">
               {value.toLocaleString()}
             </h3>
-            <p className="text-sm font-medium text-gray-400">{title}</p>
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
           </div>
 
           <div className={cn(
@@ -111,7 +111,7 @@ export function MetricCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border bg-gray-900/80 shadow-sm transition-all hover:shadow-lg",
+        "relative overflow-hidden rounded-xl border bg-card/80 shadow-sm transition-all hover:shadow-lg",
         styles.border,
         size === "large" ? "p-4" : "p-3"
       )}
@@ -124,9 +124,9 @@ export function MetricCard({
 
       <div className="relative flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-xs font-medium text-gray-400 mb-0.5">{title}</p>
+          <p className="text-xs font-medium text-muted-foreground mb-0.5">{title}</p>
           <h3 className={cn(
-            "font-bold tracking-tight text-white",
+            "font-bold tracking-tight text-foreground",
             size === "large" ? "text-4xl" : "text-2xl"
           )}>
             {value.toLocaleString()}

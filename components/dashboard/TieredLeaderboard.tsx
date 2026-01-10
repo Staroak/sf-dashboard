@@ -138,8 +138,8 @@ export function TieredLeaderboard({
       : globalRank === 2
       ? "bg-gradient-to-r from-amber-600/10 to-orange-600/10 border-amber-600/30"
       : currentTier.tier === 4
-      ? "bg-gray-800/30 border-gray-700/50"
-      : "bg-gray-800/50 border-gray-700";
+      ? "bg-muted/30 border-border/50"
+      : "bg-muted/50 border-border";
 
     // Progress bar gradient - green if at or above goal
     const progressStyle = percentage >= 100
@@ -194,17 +194,17 @@ export function TieredLeaderboard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <span className={cn(
-              "font-semibold truncate text-white",
+              "font-semibold truncate text-foreground",
               nameSize,
-              globalRank === 0 && "text-yellow-400"
+              globalRank === 0 && "text-yellow-500 dark:text-yellow-400"
             )}>
               {broker.userName}
             </span>
-            <span className={cn("font-bold text-white ml-2 tabular-nums", scoreSize)}>{score}</span>
+            <span className={cn("font-bold text-foreground ml-2 tabular-nums", scoreSize)}>{score}</span>
           </div>
 
           {/* Progress bar based on daily goal */}
-          <div className={cn("rounded-full bg-gray-700 overflow-hidden mt-0.5", progressHeight)}>
+          <div className={cn("rounded-full bg-muted overflow-hidden mt-0.5", progressHeight)}>
             <div
               className={cn("h-full rounded-full transition-all duration-500", progressStyle)}
               style={{ width: `${percentage}%` }}
@@ -216,7 +216,7 @@ export function TieredLeaderboard({
   };
 
   return (
-    <div className={cn("rounded-xl border border-gray-800 bg-gray-900/80 p-3 flex flex-col h-full", className)}>
+    <div className={cn("rounded-xl border border-border bg-card/80 p-3 flex flex-col h-full", className)}>
       {/* Header */}
       <div className="flex items-center justify-between mb-2 flex-shrink-0">
         <div className={cn(
@@ -224,7 +224,7 @@ export function TieredLeaderboard({
           isTransitioning ? "opacity-0" : "opacity-100"
         )}>
           <Trophy className={cn("h-5 w-5", tierConfig.labelColor)} />
-          <h3 className="font-semibold text-lg text-white">{title}</h3>
+          <h3 className="font-semibold text-lg text-foreground">{title}</h3>
         </div>
 
         {/* Tier indicator dots */}
@@ -237,7 +237,7 @@ export function TieredLeaderboard({
                 "w-2.5 h-2.5 rounded-full transition-all",
                 idx === currentTierIndex
                   ? getTierConfig(t.tier).dotColor
-                  : "bg-gray-600 hover:bg-gray-500"
+                  : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
               )}
               aria-label={`Go to tier ${idx + 1}`}
             />
