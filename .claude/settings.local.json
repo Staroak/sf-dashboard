@@ -4,7 +4,8 @@
       "Bash(curl:*)",
       "Bash(python:*)",
       "Bash(powershell -Command \"Invoke-WebRequest -Uri ''http://localhost:3000/api/dashboard'' -OutFile ''C:\\\\temp\\\\dashboard.json''\")",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git config:*)"
     ]
   }
 }
