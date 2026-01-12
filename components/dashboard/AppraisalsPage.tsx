@@ -45,7 +45,6 @@ export function AppraisalsPage({
           dailyGoal={DAILY_GOAL}
           currentValue={dailyAppraisals}
           goalLabel="Daily Appraisals Goal"
-          quoteCategory="appraisals"
         />
       </div>
     </div>

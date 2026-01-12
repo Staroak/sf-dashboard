@@ -45,7 +45,6 @@ export function ApplicationsPage({
           dailyGoal={DAILY_GOAL}
           currentValue={dailyApplications}
           goalLabel="Daily Applications Goal"
-          quoteCategory="applications"
         />
       </div>
     </div>

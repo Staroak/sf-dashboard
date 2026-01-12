@@ -45,7 +45,6 @@ export function SubmissionsPage({
           dailyGoal={DAILY_GOAL}
           currentValue={dailySubmissions}
           goalLabel="Daily Submissions Goal"
-          quoteCategory="submissions"
         />
       </div>
     </div>

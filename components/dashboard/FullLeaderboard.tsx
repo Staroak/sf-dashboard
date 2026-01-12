@@ -3,7 +3,6 @@
 import { cn } from "@/lib/utils";
 import { Trophy, Medal, Award, Star } from "lucide-react";
 import { BluePearl } from "./BluePearl";
-import { QuoteDisplay } from "./QuoteDisplay";
 
 interface BrokerStats {
   userId: string;
@@ -15,7 +14,6 @@ interface BrokerStats {
 }
 
 type MetricKey = "applicationsTaken" | "appraisalsOrdered" | "submissions" | "contactsMade";
-type QuoteCategory = "applications" | "appraisals" | "submissions" | "general";
 
 interface FullLeaderboardProps {
   brokers: BrokerStats[];
@@ -24,7 +22,6 @@ interface FullLeaderboardProps {
   dailyGoal: number;
   currentValue: number;
   goalLabel: string;
-  quoteCategory: QuoteCategory;
   className?: string;
 }
 
@@ -65,6 +62,7 @@ const rankIcons = [
   { icon: Award, color: "text-amber-600", bg: "bg-amber-600/10", border: "border-amber-600/30" },
   { icon: Star, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/30" },
   { icon: Star, color: "text-blue-400", bg: "bg-blue-400/10", border: "border-blue-400/30" },
+  { icon: Star, color: "text-blue-300", bg: "bg-blue-300/10", border: "border-blue-300/30" },
 ];
 
 // List of valid broker names (from Salesforce)
@@ -91,10 +89,9 @@ export function FullLeaderboard({
   dailyGoal,
   currentValue,
   goalLabel,
-  quoteCategory,
   className,
 }: FullLeaderboardProps) {
-  // Filter to valid brokers, deduplicate by name (keep highest value), then sort
+  // Filter to valid brokers
   const validBrokers = brokers.filter(b => isRealBroker(b.userName));
 
   // Deduplicate by name - keep the broker with the highest metric value
@@ -106,15 +103,16 @@ export function FullLeaderboard({
     }
   }
 
+  // Sort by metric value descending
   const sortedBrokers = Array.from(brokerMap.values())
     .sort((a, b) => b[metric] - a[metric]);
 
-  // Group by tiers
+  // Group by tiers: 6, 8, 8, 9 = 31 total
   const tiers = [
-    { brokers: sortedBrokers.slice(0, 5), offset: 0, tier: 1 },
-    { brokers: sortedBrokers.slice(5, 15), offset: 5, tier: 2 },
-    { brokers: sortedBrokers.slice(15, 25), offset: 15, tier: 3 },
-    { brokers: sortedBrokers.slice(25), offset: 25, tier: 4 },
+    { brokers: sortedBrokers.slice(0, 6), offset: 0, tier: 1 },
+    { brokers: sortedBrokers.slice(6, 14), offset: 6, tier: 2 },
+    { brokers: sortedBrokers.slice(14, 22), offset: 14, tier: 3 },
+    { brokers: sortedBrokers.slice(22, 31), offset: 22, tier: 4 },
   ];
 
   // Render broker for Tier 1 (larger)
@@ -150,28 +148,28 @@ export function FullLeaderboard({
         {/* Rank badge */}
         <div
           className={cn(
-            "flex items-center justify-center w-12 h-12 rounded-full border-2 flex-shrink-0",
+            "flex items-center justify-center w-14 h-14 rounded-full border-2 flex-shrink-0",
             rankStyle.bg,
             rankStyle.border
           )}
         >
-          <RankIcon className={cn("h-6 w-6", rankStyle.color)} />
+          <RankIcon className={cn("h-7 w-7", rankStyle.color)} />
         </div>
 
         {/* Name and score */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-3">
             <span className={cn(
-              "font-bold truncate text-xl text-foreground",
+              "font-black truncate text-4xl text-foreground",
               globalRank === 0 && "text-yellow-500 dark:text-yellow-400"
             )}>
               {broker.userName}
             </span>
-            <span className="font-bold text-2xl text-foreground tabular-nums flex-shrink-0">{score}</span>
+            <span className="font-black text-4xl text-foreground tabular-nums flex-shrink-0">{score}</span>
           </div>
 
           {/* Progress bar */}
-          <div className="h-2.5 rounded-full bg-muted overflow-hidden mt-1.5">
+          <div className="h-2.5 rounded-full bg-muted overflow-hidden mt-2">
             <div
               className={cn("h-full rounded-full transition-all duration-500", progressStyle)}
               style={{ width: `${percentage}%` }}
@@ -202,30 +200,30 @@ export function FullLeaderboard({
       <div
         key={broker.userId}
         className={cn(
-          "flex items-center gap-3 p-3 rounded-lg border transition-all hover:shadow-sm",
+          "flex items-center gap-4 p-4 rounded-lg border transition-all hover:shadow-sm",
           rowStyle
         )}
       >
         {/* Rank badge */}
-        <div className="flex items-center justify-center w-10 h-10 rounded-full border bg-muted flex-shrink-0">
+        <div className="flex items-center justify-center w-14 h-14 rounded-full border bg-muted flex-shrink-0">
           {tierNum === 4 ? (
-            <span className="text-lg">💩</span>
+            <span className="text-3xl">💩</span>
           ) : (
-            <span className="font-bold text-base text-muted-foreground">{rank}</span>
+            <span className="font-bold text-2xl text-muted-foreground">{rank}</span>
           )}
         </div>
 
         {/* Name and score */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-semibold truncate text-lg text-foreground">
+          <div className="flex items-center justify-between gap-3">
+            <span className="font-black truncate text-4xl text-foreground">
               {broker.userName.split(' ')[0]}
             </span>
-            <span className="font-bold text-xl text-foreground tabular-nums flex-shrink-0">{score}</span>
+            <span className="font-black text-4xl text-foreground tabular-nums flex-shrink-0">{score}</span>
           </div>
 
           {/* Progress bar */}
-          <div className="h-2 rounded-full bg-muted overflow-hidden mt-1">
+          <div className="h-3 rounded-full bg-muted overflow-hidden mt-2">
             <div
               className={cn("h-full rounded-full transition-all duration-500", progressStyle)}
               style={{ width: `${percentage}%` }}
@@ -239,25 +237,25 @@ export function FullLeaderboard({
   return (
     <div className={cn("h-full flex flex-col", className)}>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4 flex-shrink-0">
-        <Trophy className="h-7 w-7 text-yellow-500" />
-        <h3 className="font-bold text-2xl text-foreground">{title}</h3>
+      <div className="flex items-center gap-4 mb-4 flex-shrink-0">
+        <Trophy className="h-10 w-10 text-yellow-500" />
+        <h3 className="font-bold text-4xl text-foreground">{title}</h3>
       </div>
 
-      {/* Main Layout: Tier 1 (45%) | Tiers 2-4 (55%) */}
+      {/* Main Layout: Tier 1 (35%) | Tiers 2-4 (65%) */}
       <div className="flex-1 flex gap-4 min-h-0">
-        {/* Tier 1 Section - 45% width */}
-        <div className="w-[45%] flex flex-col min-h-0">
+        {/* Tier 1 Section - 35% width */}
+        <div className="w-[35%] flex flex-col min-h-0">
           {/* Tier 1 Header */}
           <div className={cn(
-            "rounded-xl border px-3 py-2 mb-2 flex-shrink-0",
+            "rounded-xl border px-4 py-3 mb-3 flex-shrink-0",
             tierConfig[0].headerBg,
             tierConfig[0].headerBorder
           )}>
-            <h4 className={cn("font-bold text-lg", tierConfig[0].labelColor)}>
+            <h4 className={cn("font-bold text-2xl", tierConfig[0].labelColor)}>
               {tierConfig[0].label}
             </h4>
-            <p className="text-sm text-muted-foreground">{tierConfig[0].sublabel}</p>
+            <p className="text-base text-muted-foreground">{tierConfig[0].sublabel}</p>
           </div>
 
           {/* Tier 1 Brokers */}
@@ -267,10 +265,9 @@ export function FullLeaderboard({
             )}
           </div>
 
-          {/* Goal and Quote Row */}
-          <div className="flex gap-3 mt-3 flex-1 min-h-0 overflow-hidden">
-            {/* Daily Goal */}
-            <div className="rounded-xl border border-border bg-card/80 p-3 flex items-center justify-center flex-1 overflow-hidden">
+          {/* Daily Goal */}
+          <div className="mt-3 flex-1 min-h-0 overflow-hidden">
+            <div className="rounded-xl border border-border bg-card/80 p-3 flex items-center justify-center h-full overflow-hidden">
               <BluePearl
                 current={currentValue}
                 goal={dailyGoal}
@@ -278,14 +275,11 @@ export function FullLeaderboard({
                 size="large"
               />
             </div>
-
-            {/* Quote */}
-            <QuoteDisplay category={quoteCategory} className="flex-1 overflow-hidden" />
           </div>
         </div>
 
-        {/* Tiers 2-4 Section - 55% width */}
-        <div className="w-[55%] grid grid-cols-3 gap-3 min-h-0">
+        {/* Tiers 2-4 Section - 65% width */}
+        <div className="w-[65%] grid grid-cols-3 gap-3 min-h-0">
           {tiers.slice(1).map((tier, tierIndex) => {
             const config = tierConfig[tierIndex + 1];
 
@@ -293,14 +287,14 @@ export function FullLeaderboard({
               <div key={tierIndex + 1} className="flex flex-col min-h-0">
                 {/* Tier Header */}
                 <div className={cn(
-                  "rounded-lg border px-3 py-2 mb-2 flex-shrink-0",
+                  "rounded-lg border px-4 py-3 mb-3 flex-shrink-0",
                   config.headerBg,
                   config.headerBorder
                 )}>
-                  <h4 className={cn("font-bold text-base", config.labelColor)}>
+                  <h4 className={cn("font-bold text-xl", config.labelColor)}>
                     {config.label}
                   </h4>
-                  <p className="text-sm text-muted-foreground">{config.sublabel}</p>
+                  <p className="text-base text-muted-foreground">{config.sublabel}</p>
                 </div>
 
                 {/* Brokers List */}
