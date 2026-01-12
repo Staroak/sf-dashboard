@@ -19,8 +19,6 @@ interface AppraisalsPageProps {
   brokers: BrokerStats[];
 }
 
-const DAILY_GOAL = 8;
-
 export function AppraisalsPage({
   dailyContacts,
   dailyAppraisals,
@@ -42,9 +40,6 @@ export function AppraisalsPage({
           brokers={brokers}
           metric="appraisalsOrdered"
           title="Today's Appraisals"
-          dailyGoal={DAILY_GOAL}
-          currentValue={dailyAppraisals}
-          goalLabel="Daily Appraisals Goal"
         />
       </div>
     </div>

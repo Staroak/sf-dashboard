@@ -19,8 +19,6 @@ interface ApplicationsPageProps {
   brokers: BrokerStats[];
 }
 
-const DAILY_GOAL = 33;
-
 export function ApplicationsPage({
   dailyContacts,
   dailyApplications,
@@ -42,9 +40,6 @@ export function ApplicationsPage({
           brokers={brokers}
           metric="applicationsTaken"
           title="Today's Applications"
-          dailyGoal={DAILY_GOAL}
-          currentValue={dailyApplications}
-          goalLabel="Daily Applications Goal"
         />
       </div>
     </div>

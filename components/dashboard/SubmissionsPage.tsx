@@ -19,8 +19,6 @@ interface SubmissionsPageProps {
   brokers: BrokerStats[];
 }
 
-const DAILY_GOAL = 6;
-
 export function SubmissionsPage({
   dailyContacts,
   dailySubmissions,
@@ -42,9 +40,6 @@ export function SubmissionsPage({
           brokers={brokers}
           metric="submissions"
           title="Today's Submissions"
-          dailyGoal={DAILY_GOAL}
-          currentValue={dailySubmissions}
-          goalLabel="Daily Submissions Goal"
         />
       </div>
     </div>
