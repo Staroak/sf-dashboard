@@ -2,9 +2,8 @@
 
 import { StatsSection } from "./StatsSection";
 import { RotatingLeaderboard } from "./RotatingLeaderboard";
-import { ContestedGroup } from "./ContestedGroup";
-import { BluePearl } from "./BluePearl";
 import { QuoteSidebar } from "./QuoteSidebar";
+import { BluePearl } from "./BluePearl";
 
 interface BrokerStats {
   userId: string;
@@ -31,7 +30,11 @@ interface SummaryPageProps {
   brokers: BrokerStats[];
 }
 
-const DAILY_GOAL = 33;
+const DAILY_GOALS = {
+  applications: 33,
+  appraisals: 8,
+  submissions: 6,
+};
 
 export function SummaryPage({ daily, monthly, brokers }: SummaryPageProps) {
   return (
@@ -65,35 +68,47 @@ export function SummaryPage({ daily, monthly, brokers }: SummaryPageProps) {
             />
           </div>
 
-          {/* Bottom Section: Rotating Leaderboards - takes ALL remaining space */}
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3 min-h-0">
-            {/* Rotating Top 5 Leaders */}
+          {/* Bottom Section: Leaderboard and Quotes - equal width */}
+          <div className="flex-1 grid grid-cols-2 gap-3 min-h-0">
+            {/* Rotating Leaderboard */}
             <RotatingLeaderboard
               brokers={brokers}
               rotationInterval={8000}
             />
 
-            {/* Contested Group - Shows tied brokers */}
-            <ContestedGroup
-              brokers={brokers}
-              rotationInterval={8000}
-            />
+            {/* Rotating Quotes and Tips */}
+            <QuoteSidebar />
           </div>
         </div>
 
-        {/* Sidebar - 3 columns */}
+        {/* Sidebar - 3 columns with 3 Daily Goal Pearls */}
         <aside className="col-span-12 lg:col-span-3 flex flex-col gap-3 min-h-0">
-          {/* QuoteSidebar - flex-1 to take half the space */}
-          <div className="flex-1 min-h-0">
-            <QuoteSidebar />
-          </div>
-
-          {/* Daily Goal Tracker - flex-1 to take half the space */}
-          <div className="rounded-xl border border-border bg-card/80 p-4 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0">
+          {/* Applications Goal */}
+          <div className="rounded-xl border border-border bg-card/80 p-3 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0">
             <BluePearl
               current={daily.applicationsTaken}
-              goal={DAILY_GOAL}
-              label="Daily Applications Goal"
+              goal={DAILY_GOALS.applications}
+              label="Daily Applications"
+              size="large"
+            />
+          </div>
+
+          {/* Appraisals Goal */}
+          <div className="rounded-xl border border-border bg-card/80 p-3 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0">
+            <BluePearl
+              current={daily.appraisalsOrdered}
+              goal={DAILY_GOALS.appraisals}
+              label="Daily Appraisals"
+              size="large"
+            />
+          </div>
+
+          {/* Submissions Goal */}
+          <div className="rounded-xl border border-border bg-card/80 p-3 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0">
+            <BluePearl
+              current={daily.submissions}
+              goal={DAILY_GOALS.submissions}
+              label="Daily Submissions"
               size="large"
             />
           </div>

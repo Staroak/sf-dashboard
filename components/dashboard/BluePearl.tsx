@@ -17,9 +17,9 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal", 
   // Size configurations
   const pearlSize = isLarge ? "w-32 h-32" : "w-20 h-20";
   const progressBarWidth = isLarge ? "w-32" : "w-20";
-  const labelSize = isLarge ? "text-sm" : "text-xs";
+  const labelSize = isLarge ? "text-2xl" : "text-xs";
   const numberSize = isLarge ? "text-3xl" : "text-xl";
-  const goalSize = isLarge ? "text-sm" : "text-[10px]";
+  const goalSize = isLarge ? "text-large" : "text-[10px]";
   const shineSize1 = isLarge ? "w-6 h-6 top-2 left-5" : "w-4 h-4 top-1.5 left-3";
   const shineSize2 = isLarge ? "w-3 h-3 top-5 left-6" : "w-2 h-2 top-3 left-4";
 
