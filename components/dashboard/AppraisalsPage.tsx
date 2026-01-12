@@ -2,6 +2,7 @@
 
 import { SimpleStat } from "./SimpleStat";
 import { FullLeaderboard } from "./FullLeaderboard";
+import { BluePearl } from "./BluePearl";
 
 interface BrokerStats {
   userId: string;
@@ -28,10 +29,13 @@ export function AppraisalsPage({
   return (
     <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
       {/* Top Stats Row */}
-      <div className="flex items-center justify-between flex-shrink-0">
-        <SimpleStat value={dailyContacts} label="Contacts Made Today" color="blue" />
-        <SimpleStat value={dailyAppraisals} label="Appraisals Today" color="purple" />
-        <SimpleStat value={monthlyAppraisals} label="Appraisals This Month" color="purple" />
+      <div className="flex items-center flex-shrink-0">
+        <div className="flex items-center justify-between flex-1">
+          <SimpleStat value={dailyContacts} label="Contacts Made Today" color="blue" />
+          <SimpleStat value={dailyAppraisals} label="Appraisals Today" color="purple" />
+          <SimpleStat value={monthlyAppraisals} label="Appraisals This Month" color="purple" />
+        </div>
+        <BluePearl current={dailyAppraisals} goal={8} size="horizontal" />
       </div>
 
       {/* Full Leaderboard with 4 columns */}
@@ -40,6 +44,7 @@ export function AppraisalsPage({
           brokers={brokers}
           metric="appraisalsOrdered"
           title="Today's Appraisals"
+          dailyGoal={8}
         />
       </div>
     </div>

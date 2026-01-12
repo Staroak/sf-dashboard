@@ -18,7 +18,10 @@ interface FullLeaderboardProps {
   brokers: BrokerStats[];
   metric: MetricKey;
   title: string;
+  dailyGoal?: number;
   className?: string;
+  goalLabel?: string;
+  goalCurrent?: number;
 }
 
 const tierConfig = [
@@ -27,24 +30,44 @@ const tierConfig = [
     labelColor: "text-yellow-400",
     nameColor: "text-yellow-400",
     bg: "bg-yellow-500/5",
+    cardBg: "bg-yellow-500/10",
+    cardBorder: "border-yellow-500/30",
+    badgeBg: "bg-yellow-500/20",
+    badgeBorder: "border-yellow-500/50",
+    progressBg: "bg-gradient-to-r from-green-400 to-emerald-500",
   },
   {
     label: "Tier 2",
     labelColor: "text-gray-300",
     nameColor: "text-gray-300",
     bg: "bg-gray-500/5",
+    cardBg: "bg-gray-500/10",
+    cardBorder: "border-gray-500/30",
+    badgeBg: "bg-gray-500/20",
+    badgeBorder: "border-gray-500/50",
+    progressBg: "bg-gradient-to-r from-green-400 to-emerald-500",
   },
   {
     label: "Tier 3",
-    labelColor: "text-amber-500",
-    nameColor: "text-amber-500",
-    bg: "bg-amber-500/5",
+    labelColor: "text-gray-300",
+    nameColor: "text-gray-300",
+    bg: "bg-gray-500/5",
+    cardBg: "bg-gray-500/10",
+    cardBorder: "border-gray-500/30",
+    badgeBg: "bg-gray-500/20",
+    badgeBorder: "border-gray-500/50",
+    progressBg: "bg-gradient-to-r from-green-400 to-emerald-500",
   },
   {
     label: "Tier 4",
-    labelColor: "text-gray-500",
-    nameColor: "text-gray-500",
-    bg: "bg-gray-500/5",
+    labelColor: "text-red-500",
+    nameColor: "text-red-400",
+    bg: "bg-red-500/5",
+    cardBg: "bg-red-500/15",
+    cardBorder: "border-red-500/40",
+    badgeBg: "bg-red-500/20",
+    badgeBorder: "border-red-500/50",
+    progressBg: "bg-gradient-to-r from-green-400 to-emerald-500",
   },
 ];
 
@@ -79,7 +102,10 @@ export function FullLeaderboard({
   brokers,
   metric,
   title,
+  dailyGoal = 10,
   className,
+  goalLabel,
+  goalCurrent,
 }: FullLeaderboardProps) {
   // Filter to valid brokers
   const validBrokers = brokers.filter(b => isRealBroker(b.userName));
@@ -107,10 +133,56 @@ export function FullLeaderboard({
 
   return (
     <div className={cn("h-full flex flex-col", className)}>
-      {/* Header */}
-      <div className="flex items-center justify-center gap-4 mb-4 flex-shrink-0">
-        <Trophy className="h-12 w-12 text-yellow-500" />
-        <h1 className="font-black text-6xl text-foreground">{title}</h1>
+      {/* Header - Horizontal layout with title left, goal right */}
+      <div className="flex items-center justify-between mb-3 flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <Trophy className="h-10 w-10 text-yellow-500" />
+          <h1 className="font-black text-5xl text-foreground">{title}</h1>
+        </div>
+
+        {/* Compact horizontal goal display */}
+        {goalLabel && goalCurrent !== undefined && (
+          <div className="flex items-center gap-4 bg-blue-500/10 rounded-xl px-5 py-2 border border-blue-500/30">
+            <div className="flex flex-col items-end">
+              <span className="text-sm font-medium text-blue-400 uppercase tracking-wide">{goalLabel}</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-blue-500">{goalCurrent}</span>
+                <span className="text-xl text-blue-400/70">/ {dailyGoal}</span>
+              </div>
+            </div>
+            {/* Mini progress circle */}
+            <div className="relative w-14 h-14">
+              <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  className="text-blue-900/50"
+                />
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  className={goalCurrent >= dailyGoal ? "text-green-500" : "text-blue-500"}
+                  strokeDasharray={`${Math.min((goalCurrent / dailyGoal) * 150.8, 150.8)} 150.8`}
+                />
+              </svg>
+              <span className={cn(
+                "absolute inset-0 flex items-center justify-center text-sm font-bold",
+                goalCurrent >= dailyGoal ? "text-green-500" : "text-blue-400"
+              )}>
+                {Math.round((goalCurrent / dailyGoal) * 100)}%
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 4 Column Grid - Equal Width */}
@@ -129,31 +201,23 @@ export function FullLeaderboard({
               </div>
 
               {/* Names List - Each broker row takes equal space */}
-              <div className="flex flex-col flex-1 min-h-0">
+              <div className="flex flex-col flex-1 min-h-0 gap-1">
                 {tier.brokers.map((broker, idx) => {
                   const score = broker[metric];
                   const rank = tier.startRank + idx;
+                  const percentage = Math.min((score / dailyGoal) * 100, 100);
 
-                  // Tier 1 gets icons, others get rank numbers or poop
-                  let badge;
+                  // Tier 1 gets icons, others get rank numbers
+                  let badgeContent;
                   if (tierIndex === 0) {
                     const IconConfig = tier1Icons[idx];
                     const Icon = IconConfig.icon;
-                    badge = <Icon className={cn("w-[10%] h-auto aspect-square flex-shrink-0", IconConfig.color)} />;
-                  } else if (tierIndex === 3) {
-                    badge = (
-                      <span
-                        className="w-[10%] text-center flex-shrink-0"
-                        style={{ fontSize: 'clamp(1rem, 4vw, 2.5rem)', lineHeight: 1.1 }}
-                      >
-                        💩
-                      </span>
-                    );
+                    badgeContent = <Icon className={cn("w-4 h-4", IconConfig.color)} />;
                   } else {
-                    badge = (
+                    badgeContent = (
                       <span
-                        className="font-bold text-muted-foreground w-[10%] text-center flex-shrink-0"
-                        style={{ fontSize: 'clamp(1rem, 4vw, 2.5rem)', lineHeight: 1.1 }}
+                        className={cn("font-black", config.nameColor)}
+                        style={{ fontSize: 'clamp(0.8rem, 2.5vw, 1.3rem)' }}
                       >
                         {rank}
                       </span>
@@ -163,34 +227,76 @@ export function FullLeaderboard({
                   return (
                     <div
                       key={broker.userId}
-                      className="flex items-center gap-2 px-2 flex-1"
+                      className={cn(
+                        "flex flex-col rounded-lg border p-2 flex-1",
+                        config.cardBg,
+                        config.cardBorder
+                      )}
                       style={{ minHeight: 0 }}
                     >
-                      {badge}
-                      <span
-                        className={cn(
-                          "font-bold truncate flex-1",
-                          config.nameColor
+                      {/* Name row - flex-1 to take available space */}
+                      <div className="flex items-center gap-2 flex-1">
+                        {/* Rank number or icon */}
+                        {tierIndex === 0 ? (
+                          <div
+                            className={cn(
+                              "flex items-center justify-center w-9 h-9 rounded-full border flex-shrink-0",
+                              config.badgeBg,
+                              config.badgeBorder
+                            )}
+                          >
+                            {badgeContent}
+                          </div>
+                        ) : (
+                          <span
+                            className={cn(
+                              "font-bold flex-shrink-0",
+                              config.nameColor
+                            )}
+                            style={{
+                              fontSize: 'clamp(1.1rem, 3.5vw, 2.5rem)',
+                              lineHeight: 1.2,
+                              marginRight: '0.75rem'
+                            }}
+                          >
+                            {rank}
+                          </span>
                         )}
-                        style={{
-                          fontSize: 'clamp(1rem, 4vw, 2.5rem)',
-                          lineHeight: 1.1
-                        }}
-                      >
-                        {broker.userName.split(' ')[0]}
-                      </span>
-                      <span
-                        className={cn(
-                          "font-black tabular-nums flex-shrink-0",
-                          config.nameColor
-                        )}
-                        style={{
-                          fontSize: 'clamp(1.2rem, 5vw, 3rem)',
-                          lineHeight: 1.1
-                        }}
-                      >
-                        {score}
-                      </span>
+                        <span
+                          className={cn(
+                            "font-bold truncate flex-1",
+                            config.nameColor
+                          )}
+                          style={{
+                            fontSize: 'clamp(1.1rem, 3.5vw, 2.5rem)',
+                            lineHeight: 1.2
+                          }}
+                        >
+                          {broker.userName.split(' ')[0]}
+                        </span>
+                        <span
+                          className={cn(
+                            "font-black tabular-nums flex-shrink-0",
+                            config.nameColor
+                          )}
+                          style={{
+                            fontSize: 'clamp(1.2rem, 4.5vw, 3rem)',
+                            lineHeight: 1.2
+                          }}
+                        >
+                          {score}
+                        </span>
+                      </div>
+                      {/* Progress bar - pushed to bottom with mt-auto */}
+                      <div className="h-1.5 rounded-full bg-muted/50 mt-auto overflow-hidden flex-shrink-0">
+                        <div
+                          className={cn(
+                            "h-full rounded-full transition-all duration-500",
+                            config.progressBg
+                          )}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
                     </div>
                   );
                 })}

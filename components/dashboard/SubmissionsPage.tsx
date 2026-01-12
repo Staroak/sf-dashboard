@@ -2,6 +2,7 @@
 
 import { SimpleStat } from "./SimpleStat";
 import { FullLeaderboard } from "./FullLeaderboard";
+import { BluePearl } from "./BluePearl";
 
 interface BrokerStats {
   userId: string;
@@ -28,10 +29,13 @@ export function SubmissionsPage({
   return (
     <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
       {/* Top Stats Row */}
-      <div className="flex items-center justify-between flex-shrink-0">
-        <SimpleStat value={dailyContacts} label="Contacts Made Today" color="blue" />
-        <SimpleStat value={dailySubmissions} label="Submissions Today" color="orange" />
-        <SimpleStat value={monthlySubmissions} label="Submissions This Month" color="orange" />
+      <div className="flex items-center flex-shrink-0">
+        <div className="flex items-center justify-between flex-1">
+          <SimpleStat value={dailyContacts} label="Contacts Made Today" color="blue" />
+          <SimpleStat value={dailySubmissions} label="Submissions Today" color="orange" />
+          <SimpleStat value={monthlySubmissions} label="Submissions This Month" color="orange" />
+        </div>
+        <BluePearl current={dailySubmissions} goal={6} size="horizontal" />
       </div>
 
       {/* Full Leaderboard with 4 columns */}
@@ -40,6 +44,7 @@ export function SubmissionsPage({
           brokers={brokers}
           metric="submissions"
           title="Today's Submissions"
+          dailyGoal={6}
         />
       </div>
     </div>
