@@ -42,7 +42,7 @@ interface DashboardData {
 }
 
 const REFRESH_INTERVAL = 10000; // 10 seconds
-const PAGE_ROTATION_INTERVAL = 30000; // 30 secs per page
+const PAGE_ROTATION_INTERVAL = 10000; // 10 secs per page
 
 const PAGES = ["applications", "appraisals", "submissions", "summary"] as const;
 type PageType = typeof PAGES[number];
