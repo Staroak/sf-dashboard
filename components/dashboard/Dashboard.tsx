@@ -8,6 +8,22 @@ import { AppraisalsPage } from "./AppraisalsPage";
 import { SubmissionsPage } from "./SubmissionsPage";
 import { SummaryPage } from "./SummaryPage";
 import { ThemeToggle } from "./ThemeToggle";
+import { GoalCelebration, BrokerCelebration } from "./GoalCelebration";
+
+// Daily goals configuration
+const DAILY_GOALS = {
+  applications: 33,
+  appraisals: 8,
+  submissions: 6,
+} as const;
+
+// Per-broker daily goals (applications only)
+const BROKER_DAILY_GOALS = {
+  applications: 2,
+} as const;
+
+type GoalType = keyof typeof DAILY_GOALS;
+type BrokerMetricType = 'applications';
 
 interface BrokerStats {
   userId: string;
@@ -42,7 +58,7 @@ interface DashboardData {
 }
 
 const REFRESH_INTERVAL = 10000; // 10 seconds
-const PAGE_ROTATION_INTERVAL = 10000; // 10 secs per page
+const PAGE_ROTATION_INTERVAL = 11000; // 10 secs per page
 
 const PAGES = ["applications", "appraisals", "submissions", "summary"] as const;
 type PageType = typeof PAGES[number];
@@ -63,6 +79,30 @@ export function Dashboard() {
   const [isOnline, setIsOnline] = useState(true);
   const [currentPage, setCurrentPage] = useState<PageType>("applications");
   const [isPaused, setIsPaused] = useState(false);
+
+  // Goal celebration state
+  const [celebratedGoals, setCelebratedGoals] = useState<Set<GoalType>>(new Set());
+  const [celebration, setCelebration] = useState<{
+    show: boolean;
+    type: GoalType;
+    value: number;
+  } | null>(null);
+
+  // Broker celebration state - tracks which brokers have been celebrated for each metric
+  const [celebratedBrokers, setCelebratedBrokers] = useState<Set<string>>(new Set());
+  const [brokerCelebration, setBrokerCelebration] = useState<{
+    show: boolean;
+    brokerName: string;
+    metricType: BrokerMetricType;
+    value: number;
+    goal: number;
+  } | null>(null);
+  const [brokerCelebrationQueue, setBrokerCelebrationQueue] = useState<Array<{
+    brokerName: string;
+    metricType: BrokerMetricType;
+    value: number;
+    goal: number;
+  }>>([]);
 
   const fetchData = useCallback(async (isManual = false) => {
     if (isManual) {
@@ -130,6 +170,75 @@ export function Dashboard() {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  // Check for goal completion and trigger celebration
+  useEffect(() => {
+    if (!data) return;
+
+    const metrics: Array<{ type: GoalType; value: number; goal: number }> = [
+      { type: 'applications', value: data.daily.applicationsTaken, goal: DAILY_GOALS.applications },
+      { type: 'appraisals', value: data.daily.appraisalsOrdered, goal: DAILY_GOALS.appraisals },
+      { type: 'submissions', value: data.daily.submissions, goal: DAILY_GOALS.submissions },
+    ];
+
+    for (const metric of metrics) {
+      if (metric.value >= metric.goal && !celebratedGoals.has(metric.type)) {
+        // Trigger celebration for this goal
+        setCelebration({ show: true, type: metric.type, value: metric.value });
+        setCelebratedGoals(prev => new Set([...prev, metric.type]));
+        break; // Only celebrate one goal at a time
+      }
+    }
+  }, [data, celebratedGoals]);
+
+  const handleCloseCelebration = () => {
+    setCelebration(null);
+  };
+
+  // Check for broker goal completions (applications only)
+  useEffect(() => {
+    if (!data?.daily.salesMetrics?.byBroker) return;
+
+    const brokers = data.daily.salesMetrics.byBroker;
+    const newCelebrations: Array<{
+      brokerName: string;
+      metricType: BrokerMetricType;
+      value: number;
+      goal: number;
+    }> = [];
+
+    for (const broker of brokers) {
+      // Check applications goal (2 per day)
+      const appKey = `${broker.userId}-applications`;
+      if (broker.applicationsTaken >= BROKER_DAILY_GOALS.applications && !celebratedBrokers.has(appKey)) {
+        newCelebrations.push({
+          brokerName: broker.userName,
+          metricType: 'applications',
+          value: broker.applicationsTaken,
+          goal: BROKER_DAILY_GOALS.applications,
+        });
+        setCelebratedBrokers(prev => new Set([...prev, appKey]));
+      }
+    }
+
+    // Add new celebrations to queue
+    if (newCelebrations.length > 0) {
+      setBrokerCelebrationQueue(prev => [...prev, ...newCelebrations]);
+    }
+  }, [data, celebratedBrokers]);
+
+  // Process broker celebration queue - show one at a time
+  useEffect(() => {
+    if (brokerCelebrationQueue.length > 0 && !brokerCelebration && !celebration) {
+      const [next, ...rest] = brokerCelebrationQueue;
+      setBrokerCelebration({ show: true, ...next });
+      setBrokerCelebrationQueue(rest);
+    }
+  }, [brokerCelebrationQueue, brokerCelebration, celebration]);
+
+  const handleCloseBrokerCelebration = () => {
+    setBrokerCelebration(null);
+  };
 
   const goToPrevPage = () => {
     const currentIndex = PAGES.indexOf(currentPage);
@@ -361,6 +470,28 @@ export function Dashboard() {
 
       {/* Theme Toggle */}
       <ThemeToggle />
+
+      {/* Goal Celebration Popup */}
+      {celebration && (
+        <GoalCelebration
+          show={celebration.show}
+          goalType={celebration.type}
+          value={celebration.value}
+          onClose={handleCloseCelebration}
+        />
+      )}
+
+      {/* Broker Celebration Popup */}
+      {brokerCelebration && (
+        <BrokerCelebration
+          show={brokerCelebration.show}
+          brokerName={brokerCelebration.brokerName}
+          metricType={brokerCelebration.metricType}
+          value={brokerCelebration.value}
+          goal={brokerCelebration.goal}
+          onClose={handleCloseBrokerCelebration}
+        />
+      )}
     </div>
   );
 }

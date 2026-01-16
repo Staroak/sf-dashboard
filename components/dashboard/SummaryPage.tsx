@@ -73,7 +73,7 @@ export function SummaryPage({ daily, monthly, brokers }: SummaryPageProps) {
             {/* Rotating Leaderboard */}
             <RotatingLeaderboard
               brokers={brokers}
-              rotationInterval={8000}
+              rotationInterval={3600}
             />
 
             {/* Rotating Quotes and Tips */}

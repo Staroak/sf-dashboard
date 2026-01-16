@@ -60,7 +60,7 @@ const rankIcons = [
   { icon: Award, color: "text-amber-600", bg: "bg-amber-600/10", border: "border-amber-600/30" },
 ];
 
-export function RotatingLeaderboard({ brokers, rotationInterval = 8000 }: RotatingLeaderboardProps) {
+export function RotatingLeaderboard({ brokers, rotationInterval = 5000 }: RotatingLeaderboardProps) {
   const [currentMetric, setCurrentMetric] = useState<MetricType>('applications');
   const [isTransitioning, setIsTransitioning] = useState(false);
 
