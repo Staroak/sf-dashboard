@@ -499,7 +499,7 @@ export function BrokerCelebration({ show, brokerName, metricType, value, goal, o
       {/* Main celebration card */}
       <div
         className={cn(
-          "relative z-10 flex flex-col items-center animate-celebration-bounce max-w-4xl px-8",
+          "relative z-10 flex flex-col items-center animate-celebration-bounce max-w-6xl px-16",
           isVisible ? "scale-100" : "scale-0"
         )}
         onClick={(e) => e.stopPropagation()}
@@ -507,79 +507,79 @@ export function BrokerCelebration({ show, brokerName, metricType, value, goal, o
         {/* Close button */}
         <button
           onClick={handleClose}
-          className="absolute -top-4 -right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-20"
+          className="absolute -top-8 -right-8 p-4 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-20"
         >
-          <X className="w-6 h-6 text-white" />
+          <X className="w-12 h-12 text-white" />
         </button>
 
         {/* Glowing background circle */}
         <div className={cn(
-          "absolute w-[400px] h-[400px] rounded-full blur-3xl opacity-40 animate-pulse-glow",
+          "absolute w-[800px] h-[800px] rounded-full blur-3xl opacity-40 animate-pulse-glow",
           `bg-gradient-to-r ${config.color}`
         )} />
 
         {/* Trophy with glow */}
-        <div className="relative mb-4">
+        <div className="relative mb-8">
           <div className={cn(
-            "absolute inset-0 blur-2xl animate-pulse",
+            "absolute inset-0 blur-3xl animate-pulse",
             `bg-gradient-to-r ${config.color} opacity-50`
           )} />
           <Trophy
             className={cn(
-              "relative w-24 h-24 animate-trophy-bounce",
-              "text-yellow-400 drop-shadow-[0_0_25px_rgba(250,204,21,0.8)]"
+              "relative w-48 h-48 animate-trophy-bounce",
+              "text-yellow-400 drop-shadow-[0_0_50px_rgba(250,204,21,0.8)]"
             )}
             fill="currentColor"
             strokeWidth={1}
           />
           {/* Floating sparkles around trophy */}
-          <Sparkles className="absolute -top-3 -left-3 w-6 h-6 text-yellow-300 animate-float-sparkle" />
-          <Sparkles className="absolute -top-1 -right-4 w-5 h-5 text-yellow-200 animate-float-sparkle-delayed" />
-          <PartyPopper className="absolute -top-4 right-0 w-8 h-8 text-pink-400 animate-party-pop" />
-          <PartyPopper className="absolute -top-4 left-0 w-8 h-8 text-blue-400 animate-party-pop-delayed scale-x-[-1]" />
+          <Sparkles className="absolute -top-6 -left-6 w-12 h-12 text-yellow-300 animate-float-sparkle" />
+          <Sparkles className="absolute -top-2 -right-8 w-10 h-10 text-yellow-200 animate-float-sparkle-delayed" />
+          <PartyPopper className="absolute -top-8 right-0 w-16 h-16 text-pink-400 animate-party-pop" />
+          <PartyPopper className="absolute -top-8 left-0 w-16 h-16 text-blue-400 animate-party-pop-delayed scale-x-[-1]" />
         </div>
 
         {/* Broker name - BIG and prominent */}
-        <h1 className="text-5xl md:text-7xl font-black mb-2 animate-rainbow-text tracking-tight text-center">
+        <h1 className="text-7xl md:text-9xl font-black mb-4 animate-rainbow-text tracking-tight text-center">
           {firstName.toUpperCase()}
         </h1>
 
         {/* Achievement text */}
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 animate-badge-pop text-center">
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-8 animate-badge-pop text-center">
           HIT THEIR DAILY GOAL!
         </h2>
 
         {/* Metric badge */}
         <div className={cn(
-          "px-6 py-2 rounded-full mb-4 animate-score-pop",
-          `bg-gradient-to-r ${config.color} shadow-xl ${config.glowColor}`
+          "px-12 py-4 rounded-full mb-8 animate-score-pop",
+          `bg-gradient-to-r ${config.color} shadow-2xl ${config.glowColor}`
         )}>
-          <span className="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
-            <span className="text-3xl">{config.icon}</span>
+          <span className="text-3xl md:text-4xl font-bold text-white flex items-center gap-4">
+            <span className="text-6xl">{config.icon}</span>
             {value} {value === 1 ? config.title : config.titlePlural}
-            <span className="text-3xl">{config.icon}</span>
+            <span className="text-6xl">{config.icon}</span>
           </span>
         </div>
 
         {/* Goal progress indicator */}
-        <div className="flex items-center gap-3 animate-fade-in-up">
+        <div className="flex items-center gap-6 animate-fade-in-up">
           <div className={cn(
-            "text-4xl md:text-5xl font-black tabular-nums",
+            "text-6xl md:text-8xl font-black tabular-nums",
             "bg-clip-text text-transparent",
             `bg-gradient-to-r ${config.color}`
           )}>
             {value} / {goal}
           </div>
-          <span className="text-lg text-white/70">daily goal</span>
+          <span className="text-2xl text-white/70">daily goal</span>
         </div>
 
         {/* Celebration message */}
-        <p className="text-lg md:text-xl text-white/80 mt-6 font-medium animate-fade-in-up text-center">
+        <p className="text-2xl md:text-3xl text-white/80 mt-12 font-medium animate-fade-in-up text-center">
           Way to go, {firstName}! Keep up the amazing work! 🔥
         </p>
 
         {/* Click to close hint */}
-        <p className="text-xs text-white/40 mt-4 animate-pulse">
+        <p className="text-base text-white/40 mt-8 animate-pulse">
           Click anywhere to close
         </p>
       </div>
