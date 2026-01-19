@@ -76,6 +76,15 @@ export const TEAMS: TeamConfig[] = [
       "Gaurav Dadral",
     ],
   },
+  {
+    displayName: "Team Sunny",
+    leaderName: "Sunny Dhillon",
+    members: [
+      "Olaf Durkowski",
+      "Karny Mehat",
+      "Salil Singla"
+    ]
+  }
 ];
 
 // Helper to get all team members INCLUDING the leader
