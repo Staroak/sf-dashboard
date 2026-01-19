@@ -15,15 +15,32 @@ import { GoalCelebration, BrokerCelebration } from "./GoalCelebration";
 const DAILY_GOALS = {
   applications: 33,
   appraisals: 10,
-  submissions: 6,
+  submissions: 8,
 } as const;
 
-// Per-broker daily goals
+// Per-broker daily goals (default)
 const BROKER_DAILY_GOALS = {
   applications: 2,
   appraisals: 2,
   submissions: 2,
 } as const;
+
+// Nav's custom daily goals (higher targets)
+const NAV_DAILY_GOALS = {
+  applications: 5,
+  appraisals: 5,
+  submissions: 5,
+} as const;
+
+// Helper to get broker-specific goal
+function getBrokerGoal(brokerName: string, metric: BrokerMetricType): number {
+  // Check if this is Nav (case-insensitive first name match)
+  const firstName = brokerName.toLowerCase().split(/\s+/)[0];
+  if (firstName === 'nav') {
+    return NAV_DAILY_GOALS[metric];
+  }
+  return BROKER_DAILY_GOALS[metric];
+}
 
 type GoalType = keyof typeof DAILY_GOALS;
 type BrokerMetricType = 'applications' | 'appraisals' | 'submissions';
@@ -216,38 +233,43 @@ export function Dashboard() {
     }> = [];
 
     for (const broker of brokers) {
-      // Check applications goal (2 per day)
+      // Get broker-specific goals (Nav has higher targets)
+      const appGoal = getBrokerGoal(broker.userName, 'applications');
+      const apprGoal = getBrokerGoal(broker.userName, 'appraisals');
+      const subGoal = getBrokerGoal(broker.userName, 'submissions');
+
+      // Check applications goal
       const appKey = `${broker.userId}-applications`;
-      if (broker.applicationsTaken >= BROKER_DAILY_GOALS.applications && !celebratedBrokers.has(appKey)) {
+      if (broker.applicationsTaken >= appGoal && !celebratedBrokers.has(appKey)) {
         newCelebrations.push({
           brokerName: broker.userName,
           metricType: 'applications',
           value: broker.applicationsTaken,
-          goal: BROKER_DAILY_GOALS.applications,
+          goal: appGoal,
         });
         setCelebratedBrokers(prev => new Set([...prev, appKey]));
       }
 
-      // Check appraisals goal (2 per day)
+      // Check appraisals goal
       const apprKey = `${broker.userId}-appraisals`;
-      if (broker.appraisalsOrdered >= BROKER_DAILY_GOALS.appraisals && !celebratedBrokers.has(apprKey)) {
+      if (broker.appraisalsOrdered >= apprGoal && !celebratedBrokers.has(apprKey)) {
         newCelebrations.push({
           brokerName: broker.userName,
           metricType: 'appraisals',
           value: broker.appraisalsOrdered,
-          goal: BROKER_DAILY_GOALS.appraisals,
+          goal: apprGoal,
         });
         setCelebratedBrokers(prev => new Set([...prev, apprKey]));
       }
 
-      // Check submissions goal (2 per day)
+      // Check submissions goal
       const subKey = `${broker.userId}-submissions`;
-      if (broker.submissions >= BROKER_DAILY_GOALS.submissions && !celebratedBrokers.has(subKey)) {
+      if (broker.submissions >= subGoal && !celebratedBrokers.has(subKey)) {
         newCelebrations.push({
           brokerName: broker.userName,
           metricType: 'submissions',
           value: broker.submissions,
-          goal: BROKER_DAILY_GOALS.submissions,
+          goal: subGoal,
         });
         setCelebratedBrokers(prev => new Set([...prev, subKey]));
       }

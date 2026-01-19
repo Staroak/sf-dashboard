@@ -37,7 +37,7 @@ const goalConfig = {
   },
   submissions: {
     title: "SUBMISSIONS",
-    goal: 6,
+    goal: 8,
     color: "from-orange-400 via-amber-500 to-yellow-500",
     glowColor: "shadow-orange-500/50",
     icon: "🚀",
