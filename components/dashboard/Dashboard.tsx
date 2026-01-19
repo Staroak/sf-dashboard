@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { ApplicationsPage } from "./ApplicationsPage";
 import { AppraisalsPage } from "./AppraisalsPage";
 import { SubmissionsPage } from "./SubmissionsPage";
+import { TeamLeadsPage } from "./TeamLeadsPage";
 import { SummaryPage } from "./SummaryPage";
 import { ThemeToggle } from "./ThemeToggle";
 import { GoalCelebration, BrokerCelebration } from "./GoalCelebration";
@@ -13,7 +14,7 @@ import { GoalCelebration, BrokerCelebration } from "./GoalCelebration";
 // Daily goals configuration
 const DAILY_GOALS = {
   applications: 33,
-  appraisals: 8,
+  appraisals: 10,
   submissions: 6,
 } as const;
 
@@ -34,40 +35,44 @@ interface BrokerStats {
   submissions: number;
 }
 
+interface PeriodData {
+  contactsMade: number;
+  applicationsTaken: number;
+  appraisalsOrdered: number;
+  submissions: number;
+  salesMetrics?: {
+    byBroker: BrokerStats[];
+  };
+}
+
 interface DashboardData {
   timestamp: string;
-  daily: {
-    contactsMade: number;
-    applicationsTaken: number;
-    appraisalsOrdered: number;
-    submissions: number;
-    salesMetrics?: {
-      byBroker: BrokerStats[];
-    };
-  };
-  monthly: {
-    contactsMade: number;
-    applicationsTaken: number;
-    appraisalsOrdered: number;
-    submissions: number;
-    salesMetrics?: {
-      byBroker: BrokerStats[];
-    };
-  };
+  daily: PeriodData;
+  yesterday: PeriodData;
+  monthly: PeriodData;
   leaderboard: BrokerStats[];
 }
 
 const REFRESH_INTERVAL = 10000; // 10 seconds
-const PAGE_ROTATION_INTERVAL = 11000; // 10 secs per page
 
-const PAGES = ["applications", "appraisals", "submissions", "summary"] as const;
+const PAGES = ["applications", "appraisals", "submissions", "teamleads", "summary"] as const;
 type PageType = typeof PAGES[number];
 
 const PAGE_LABELS: Record<PageType, string> = {
   applications: "Applications",
   appraisals: "Appraisals",
   submissions: "Submissions",
+  teamleads: "Team Leads",
   summary: "Summary",
+};
+
+// Page-specific durations in milliseconds
+const PAGE_DURATIONS: Record<PageType, number> = {
+  applications: 11000,
+  appraisals: 11000,
+  submissions: 11000,
+  teamleads: 30000,  // 30 seconds for team leads
+  summary: 11000,
 };
 
 export function Dashboard() {
@@ -142,20 +147,21 @@ export function Dashboard() {
     return () => clearInterval(interval);
   }, [fetchData]);
 
-  // Page rotation
+  // Page rotation with page-specific durations
   useEffect(() => {
     if (isPaused) return;
 
-    const interval = setInterval(() => {
+    const duration = PAGE_DURATIONS[currentPage];
+    const timeout = setTimeout(() => {
       setCurrentPage((prev) => {
         const currentIndex = PAGES.indexOf(prev);
         const nextIndex = (currentIndex + 1) % PAGES.length;
         return PAGES[nextIndex];
       });
-    }, PAGE_ROTATION_INTERVAL);
+    }, duration);
 
-    return () => clearInterval(interval);
-  }, [isPaused]);
+    return () => clearTimeout(timeout);
+  }, [isPaused, currentPage]);
 
   // Online/offline detection
   useEffect(() => {
@@ -256,6 +262,7 @@ export function Dashboard() {
 
   // Get broker stats for leaderboards
   const dailyBrokers: BrokerStats[] = data?.daily.salesMetrics?.byBroker || [];
+  const yesterdayBrokers: BrokerStats[] = data?.yesterday?.salesMetrics?.byBroker || [];
   const monthlyBrokers: BrokerStats[] = data?.monthly.salesMetrics?.byBroker || data?.leaderboard || [];
 
   // Get current time formatted
@@ -291,6 +298,9 @@ export function Dashboard() {
             dailyApplications={data?.daily.applicationsTaken || 0}
             monthlyApplications={data?.monthly.applicationsTaken || 0}
             brokers={dailyBrokers}
+            yesterdayContacts={data?.yesterday?.contactsMade}
+            yesterdayApplications={data?.yesterday?.applicationsTaken}
+            yesterdayBrokers={yesterdayBrokers}
           />
         );
       case "appraisals":
@@ -300,6 +310,9 @@ export function Dashboard() {
             dailyAppraisals={data?.daily.appraisalsOrdered || 0}
             monthlyAppraisals={data?.monthly.appraisalsOrdered || 0}
             brokers={dailyBrokers}
+            yesterdayContacts={data?.yesterday?.contactsMade}
+            yesterdayAppraisals={data?.yesterday?.appraisalsOrdered}
+            yesterdayBrokers={yesterdayBrokers}
           />
         );
       case "submissions":
@@ -309,8 +322,13 @@ export function Dashboard() {
             dailySubmissions={data?.daily.submissions || 0}
             monthlySubmissions={data?.monthly.submissions || 0}
             brokers={dailyBrokers}
+            yesterdayContacts={data?.yesterday?.contactsMade}
+            yesterdaySubmissions={data?.yesterday?.submissions}
+            yesterdayBrokers={yesterdayBrokers}
           />
         );
+      case "teamleads":
+        return <TeamLeadsPage brokers={dailyBrokers} yesterdayBrokers={yesterdayBrokers} />;
       case "summary":
         return (
           <SummaryPage
@@ -325,6 +343,12 @@ export function Dashboard() {
               applicationsTaken: data?.monthly.applicationsTaken || 0,
               appraisalsOrdered: data?.monthly.appraisalsOrdered || 0,
               submissions: data?.monthly.submissions || 0,
+            }}
+            yesterday={{
+              contactsMade: data?.yesterday?.contactsMade || 0,
+              applicationsTaken: data?.yesterday?.applicationsTaken || 0,
+              appraisalsOrdered: data?.yesterday?.appraisalsOrdered || 0,
+              submissions: data?.yesterday?.submissions || 0,
             }}
             brokers={monthlyBrokers}
           />

@@ -10,21 +10,18 @@ export interface BrokerStats {
   submissions: number;
 }
 
+export interface PeriodMetrics {
+  contactsMade: number;
+  applicationsTaken: number;
+  appraisalsOrdered: number;
+  submissions: number;
+  byBroker: BrokerStats[];
+}
+
 export interface DashboardMetrics {
-  daily: {
-    contactsMade: number;
-    applicationsTaken: number;
-    appraisalsOrdered: number;
-    submissions: number;
-    byBroker: BrokerStats[];
-  };
-  monthly: {
-    contactsMade: number;
-    applicationsTaken: number;
-    appraisalsOrdered: number;
-    submissions: number;
-    byBroker: BrokerStats[];
-  };
+  daily: PeriodMetrics;
+  monthly: PeriodMetrics;
+  yesterday: PeriodMetrics;
   leaderboard: BrokerStats[];
 }
 
@@ -45,7 +42,7 @@ interface TaskRecord {
 
 class SalesforceService {
   // Get Eastern timezone boundaries for today and this month
-  private getDateBoundaries(): {
+  private getDateBoundaries(daysOffset: number = 0): {
     todayStart: string;
     todayEnd: string;
     monthStart: string;
@@ -75,16 +72,21 @@ class SalesforceService {
     // Eastern midnight in UTC: EST = UTC+5, EDT = UTC+4
     const utcOffset = isDST ? 4 : 5;
 
+    // Apply days offset (negative for yesterday, etc.)
+    const targetDay = day + daysOffset;
+
     // Today's boundaries in UTC (Eastern midnight = 5:00 UTC in EST, 4:00 UTC in EDT)
-    const todayStart = new Date(Date.UTC(year, month - 1, day, utcOffset, 0, 0, 0));
-    const todayEnd = new Date(Date.UTC(year, month - 1, day + 1, utcOffset, 0, 0, 0));
+    const todayStart = new Date(Date.UTC(year, month - 1, targetDay, utcOffset, 0, 0, 0));
+    const todayEnd = new Date(Date.UTC(year, month - 1, targetDay + 1, utcOffset, 0, 0, 0));
 
     // This month's boundaries in UTC
     const monthStart = new Date(Date.UTC(year, month - 1, 1, utcOffset, 0, 0, 0));
     const monthEnd = new Date(Date.UTC(year, month, 1, utcOffset, 0, 0, 0));
 
-    console.log(`Timezone: ${timezone}, DST: ${isDST}, UTC offset: ${utcOffset}`);
-    console.log(`Today range: ${todayStart.toISOString()} to ${todayEnd.toISOString()}`);
+    if (daysOffset === 0) {
+      console.log(`Timezone: ${timezone}, DST: ${isDST}, UTC offset: ${utcOffset}`);
+      console.log(`Today range: ${todayStart.toISOString()} to ${todayEnd.toISOString()}`);
+    }
 
     return {
       todayStart: todayStart.toISOString(),
@@ -167,9 +169,9 @@ class SalesforceService {
 
   // Get Applications Taken (from Task object with Subject = 'Application Taken')
   // Uses deduplication to filter out tasks created within 1 second by same owner
-  private async getApplicationsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
+  private async getApplicationsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
     // Use explicit Eastern timezone date ranges to match Salesforce org timezone
-    const boundaries = this.getDateBoundaries();
+    const boundaries = this.getDateBoundaries(daysOffset);
     const dateFilter = period === 'daily'
       ? `CreatedDate >= ${boundaries.todayStart} AND CreatedDate < ${boundaries.todayEnd}`
       : `CreatedDate >= ${boundaries.monthStart} AND CreatedDate < ${boundaries.monthEnd}`;
@@ -214,9 +216,9 @@ class SalesforceService {
 
   // Get Contacts Made (sum of Application Taken, No Opportunity, Not Interested, Scheduled Follow Up)
   // Uses deduplication to filter out tasks created within 1 second by same owner with same subject
-  private async getContactsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
+  private async getContactsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
     // Use explicit Eastern timezone date ranges to match Salesforce org timezone
-    const boundaries = this.getDateBoundaries();
+    const boundaries = this.getDateBoundaries(daysOffset);
     const dateFilter = period === 'daily'
       ? `CreatedDate >= ${boundaries.todayStart} AND CreatedDate < ${boundaries.todayEnd}`
       : `CreatedDate >= ${boundaries.monthStart} AND CreatedDate < ${boundaries.monthEnd}`;
@@ -261,12 +263,15 @@ class SalesforceService {
   }
 
   // Get Appraisals Ordered (using Appraisal_Date__c field - Date type)
-  private async getAppraisalsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
+  private async getAppraisalsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
     const objectName = process.env.SF_APPLICATION_OBJECT || 'Opportunity';
-    // Appraisal_Date__c is a Date field, compare directly with TODAY/THIS_MONTH
-    const dateFilter = period === 'daily'
-      ? 'Appraisal_Date__c = TODAY'
-      : 'Appraisal_Date__c = THIS_MONTH';
+    // Appraisal_Date__c is a Date field, compare directly with TODAY/THIS_MONTH/YESTERDAY
+    let dateFilter: string;
+    if (period === 'daily') {
+      dateFilter = daysOffset === -1 ? 'Appraisal_Date__c = YESTERDAY' : 'Appraisal_Date__c = TODAY';
+    } else {
+      dateFilter = 'Appraisal_Date__c = THIS_MONTH';
+    }
 
     const query = `
       SELECT OwnerId, COUNT(Id) total
@@ -300,12 +305,15 @@ class SalesforceService {
   }
 
   // Get Submissions to Lender (using Date_Submitted__c field - Date type)
-  private async getSubmissionsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
+  private async getSubmissionsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
     const objectName = process.env.SF_APPLICATION_OBJECT || 'Opportunity';
-    // Date_Submitted__c is a Date field, compare directly with TODAY/THIS_MONTH
-    const dateFilter = period === 'daily'
-      ? 'Date_Submitted__c = TODAY'
-      : 'Date_Submitted__c = THIS_MONTH';
+    // Date_Submitted__c is a Date field, compare directly with TODAY/THIS_MONTH/YESTERDAY
+    let dateFilter: string;
+    if (period === 'daily') {
+      dateFilter = daysOffset === -1 ? 'Date_Submitted__c = YESTERDAY' : 'Date_Submitted__c = TODAY';
+    } else {
+      dateFilter = 'Date_Submitted__c = THIS_MONTH';
+    }
 
     const query = `
       SELECT OwnerId, COUNT(Id) total
@@ -408,6 +416,12 @@ class SalesforceService {
     const dailyAppraisals = await this.getAppraisalsCount(conn, 'daily', brokerNames);
     const dailySubmissions = await this.getSubmissionsCount(conn, 'daily', brokerNames);
 
+    console.log('Fetching yesterday metrics...');
+    const yesterdayContacts = await this.getContactsCount(conn, 'daily', brokerNames, -1);
+    const yesterdayApplications = await this.getApplicationsCount(conn, 'daily', brokerNames, -1);
+    const yesterdayAppraisals = await this.getAppraisalsCount(conn, 'daily', brokerNames, -1);
+    const yesterdaySubmissions = await this.getSubmissionsCount(conn, 'daily', brokerNames, -1);
+
     console.log('Fetching monthly metrics...');
     const monthlyContacts = await this.getContactsCount(conn, 'monthly', brokerNames);
     const monthlyApplications = await this.getApplicationsCount(conn, 'monthly', brokerNames);
@@ -420,6 +434,14 @@ class SalesforceService {
       dailyApplications.byBroker,
       dailyAppraisals.byBroker,
       dailySubmissions.byBroker,
+      brokerNames // Include all active users
+    );
+
+    const yesterdayBrokerStats = this.combineBrokerStats(
+      yesterdayContacts.byBroker,
+      yesterdayApplications.byBroker,
+      yesterdayAppraisals.byBroker,
+      yesterdaySubmissions.byBroker,
       brokerNames // Include all active users
     );
 
@@ -437,6 +459,13 @@ class SalesforceService {
         appraisalsOrdered: dailyAppraisals.total,
         submissions: dailySubmissions.total,
         byBroker: dailyBrokerStats
+      },
+      yesterday: {
+        contactsMade: yesterdayContacts.total,
+        applicationsTaken: yesterdayApplications.total,
+        appraisalsOrdered: yesterdayAppraisals.total,
+        submissions: yesterdaySubmissions.total,
+        byBroker: yesterdayBrokerStats
       },
       monthly: {
         contactsMade: monthlyContacts.total,

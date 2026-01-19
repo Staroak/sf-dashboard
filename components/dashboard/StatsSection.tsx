@@ -10,6 +10,10 @@ interface StatsSectionProps {
   applicationsTaken: number;
   appraisalsOrdered: number;
   submissions: number;
+  previousContactsMade?: number;
+  previousApplicationsTaken?: number;
+  previousAppraisalsOrdered?: number;
+  previousSubmissions?: number;
   compact?: boolean; // Removes subtitles and uses inline layout
 }
 
@@ -20,6 +24,10 @@ export function StatsSection({
   applicationsTaken,
   appraisalsOrdered,
   submissions,
+  previousContactsMade,
+  previousApplicationsTaken,
+  previousAppraisalsOrdered,
+  previousSubmissions,
   compact = false,
 }: StatsSectionProps) {
   const isDaily = period === "Daily";
@@ -43,6 +51,10 @@ export function StatsSection({
           icon={Phone}
           color="blue"
           compact={compact}
+          trend={previousContactsMade !== undefined ? {
+            value: previousContactsMade === 0 ? (contactsMade > 0 ? 100 : 0) : Math.round(((contactsMade - previousContactsMade) / previousContactsMade) * 100),
+            isPositive: contactsMade >= previousContactsMade
+          } : undefined}
         />
         <MetricCard
           title="Applications"
@@ -51,6 +63,10 @@ export function StatsSection({
           icon={FileText}
           color="green"
           compact={compact}
+          trend={previousApplicationsTaken !== undefined ? {
+            value: previousApplicationsTaken === 0 ? (applicationsTaken > 0 ? 100 : 0) : Math.round(((applicationsTaken - previousApplicationsTaken) / previousApplicationsTaken) * 100),
+            isPositive: applicationsTaken >= previousApplicationsTaken
+          } : undefined}
         />
         <MetricCard
           title="Appraisals"
@@ -59,6 +75,10 @@ export function StatsSection({
           icon={Home}
           color="purple"
           compact={compact}
+          trend={previousAppraisalsOrdered !== undefined ? {
+            value: previousAppraisalsOrdered === 0 ? (appraisalsOrdered > 0 ? 100 : 0) : Math.round(((appraisalsOrdered - previousAppraisalsOrdered) / previousAppraisalsOrdered) * 100),
+            isPositive: appraisalsOrdered >= previousAppraisalsOrdered
+          } : undefined}
         />
         <MetricCard
           title="Submissions"
@@ -67,6 +87,10 @@ export function StatsSection({
           icon={Send}
           color="orange"
           compact={compact}
+          trend={previousSubmissions !== undefined ? {
+            value: previousSubmissions === 0 ? (submissions > 0 ? 100 : 0) : Math.round(((submissions - previousSubmissions) / previousSubmissions) * 100),
+            isPositive: submissions >= previousSubmissions
+          } : undefined}
         />
       </div>
     </div>

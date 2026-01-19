@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Trophy, Medal, Award, Star } from "lucide-react";
+import { Trophy, Medal, Award, Star, TrendingUp, TrendingDown } from "lucide-react";
 
 interface BrokerStats {
   userId: string;
@@ -16,12 +16,14 @@ type MetricKey = "applicationsTaken" | "appraisalsOrdered" | "submissions" | "co
 
 interface FullLeaderboardProps {
   brokers: BrokerStats[];
+  yesterdayBrokers?: BrokerStats[];
   metric: MetricKey;
   title: string;
   dailyGoal?: number;
   className?: string;
   goalLabel?: string;
   goalCurrent?: number;
+  goalYesterday?: number;
 }
 
 const tierConfig = [
@@ -71,7 +73,7 @@ const tierConfig = [
   },
 ];
 
-// Tier 1 rank icons (first 6)
+// Tier 1 rank icons (first 7)
 const tier1Icons = [
   { icon: Trophy, color: "text-yellow-500" },
   { icon: Medal, color: "text-gray-400" },
@@ -79,11 +81,12 @@ const tier1Icons = [
   { icon: Star, color: "text-blue-500" },
   { icon: Star, color: "text-blue-400" },
   { icon: Star, color: "text-blue-300" },
+  { icon: Star, color: "text-blue-200" },
 ];
 
 // List of valid broker names (from Salesforce)
 const VALID_BROKERS = [
-  'Alika Walia', 'Baldip Nijjar', 'Bowie Nan', 'Brandon Viaje-Roque', 'Brendan Wilson',
+  'Alice Nabi', 'Alika Walia', 'Baldip Nijjar', 'Bowie Nan', 'Brandon Viaje-Roque', 'Brendan Wilson',
   'Charlene Smith', 'Doyle Minhas', 'Garry Singh', 'Gaurav Dadral', 'Gurjit Sandhu',
   'Gurpreet Kaur', 'Harick Brar', 'Jaslene Perhar', 'Jennifer Souvanvong', 'Karny Mehat',
   'Lesly Camaclang', 'Mindy Basran', 'Natalie Pacheco', 'Nav Cheema', 'Olaf Durkowski',
@@ -100,15 +103,35 @@ const isRealBroker = (name: string): boolean => {
 
 export function FullLeaderboard({
   brokers,
+  yesterdayBrokers,
   metric,
   title,
   dailyGoal = 10,
   className,
   goalLabel,
   goalCurrent,
+  goalYesterday,
 }: FullLeaderboardProps) {
+  // Create lookup map for yesterday's broker data
+  const yesterdayLookup = new Map<string, number>();
+  if (yesterdayBrokers) {
+    for (const broker of yesterdayBrokers) {
+      yesterdayLookup.set(broker.userId, broker[metric]);
+    }
+  }
+  // Debug: Check if Alice Nabi is in the incoming brokers
+  // const aliceIncoming = brokers.find(b => b.userName.includes('Alice'));
+  // console.log('=== FULLLEADERBOARD DEBUG ===');
+  // console.log('Alice in incoming brokers:', aliceIncoming);
+  // console.log('Total incoming brokers:', brokers.length);
+
   // Filter to valid brokers
   const validBrokers = brokers.filter(b => isRealBroker(b.userName));
+
+  // const aliceValid = validBrokers.find(b => b.userName.includes('Alice'));
+  // console.log('Alice after VALID_BROKERS filter:', aliceValid);
+  // console.log('Total valid brokers:', validBrokers.length);
+  // console.log('=============================');
 
   // Deduplicate by name - keep the broker with the highest metric value
   const brokerMap = new Map<string, BrokerStats>();
@@ -123,12 +146,12 @@ export function FullLeaderboard({
   const sortedBrokers = Array.from(brokerMap.values())
     .sort((a, b) => b[metric] - a[metric]);
 
-  // Group by tiers: 6, 8, 8, 9 = 31 total
+  // Group by tiers: 7, 8, 8, 9 = 32 total
   const tiers = [
-    { brokers: sortedBrokers.slice(0, 6), startRank: 1, tier: 0 },
-    { brokers: sortedBrokers.slice(6, 14), startRank: 7, tier: 1 },
-    { brokers: sortedBrokers.slice(14, 22), startRank: 15, tier: 2 },
-    { brokers: sortedBrokers.slice(22, 31), startRank: 23, tier: 3 },
+    { brokers: sortedBrokers.slice(0, 7), startRank: 1, tier: 0 },
+    { brokers: sortedBrokers.slice(7, 15), startRank: 8, tier: 1 },
+    { brokers: sortedBrokers.slice(15, 23), startRank: 16, tier: 2 },
+    { brokers: sortedBrokers.slice(23, 32), startRank: 24, tier: 3 },
   ];
 
   return (
@@ -148,6 +171,20 @@ export function FullLeaderboard({
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-black text-blue-500">{goalCurrent}</span>
                 <span className="text-xl text-blue-400/70">/ {dailyGoal}</span>
+                {goalYesterday !== undefined && (
+                  <span className={cn(
+                    "flex items-center gap-0.5 text-sm font-semibold ml-2",
+                    goalCurrent === goalYesterday ? "text-muted-foreground" :
+                    goalCurrent > goalYesterday ? "text-green-500" : "text-red-500"
+                  )}>
+                    {goalCurrent !== goalYesterday && (
+                      goalCurrent > goalYesterday ?
+                        <TrendingUp className="h-3 w-3" /> :
+                        <TrendingDown className="h-3 w-3" />
+                    )}
+                    {goalCurrent > goalYesterday ? "+" : ""}{goalCurrent - goalYesterday}
+                  </span>
+                )}
               </div>
             </div>
             {/* Mini progress circle */}
@@ -206,6 +243,8 @@ export function FullLeaderboard({
                   const score = broker[metric];
                   const rank = tier.startRank + idx;
                   const percentage = Math.min((score / dailyGoal) * 100, 100);
+                  const yesterdayScore = yesterdayLookup.get(broker.userId);
+                  const delta = yesterdayScore !== undefined ? score - yesterdayScore : null;
 
                   // Tier 1 gets icons, others get rank numbers
                   let badgeContent;
@@ -274,18 +313,31 @@ export function FullLeaderboard({
                         >
                           {broker.userName.split(' ')[0]}
                         </span>
-                        <span
-                          className={cn(
-                            "font-black tabular-nums flex-shrink-0",
-                            config.nameColor
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <span
+                            className={cn(
+                              "font-black tabular-nums",
+                              config.nameColor
+                            )}
+                            style={{
+                              fontSize: 'clamp(1.2rem, 4.5vw, 3rem)',
+                              lineHeight: 1.2
+                            }}
+                          >
+                            {score}
+                          </span>
+                          {delta !== null && delta !== 0 && (
+                            <span
+                              className={cn(
+                                "flex items-center text-xs font-bold",
+                                delta > 0 ? "text-green-500" : "text-red-500"
+                              )}
+                            >
+                              {delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                              {delta > 0 ? "+" : ""}{delta}
+                            </span>
                           )}
-                          style={{
-                            fontSize: 'clamp(1.2rem, 4.5vw, 3rem)',
-                            lineHeight: 1.2
-                          }}
-                        >
-                          {score}
-                        </span>
+                        </div>
                       </div>
                       {/* Progress bar - pushed to bottom with mt-auto */}
                       <div className="h-1.5 rounded-full bg-muted/50 mt-auto overflow-hidden flex-shrink-0">

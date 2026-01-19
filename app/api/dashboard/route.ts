@@ -12,6 +12,12 @@ export async function GET() {
       console.log('Fetching Salesforce metrics...');
       salesforceMetrics = await salesforceService.getAllMetrics();
       console.log('Salesforce metrics fetched successfully');
+
+      // Debug: Log all broker names returned from Salesforce
+      const allBrokerNames = salesforceMetrics?.daily.byBroker.map(b => b.userName) || [];
+      console.log('=== ALL BROKER NAMES FROM SALESFORCE ===');
+      console.log(JSON.stringify(allBrokerNames.sort(), null, 2));
+      console.log('=========================================');
     } catch (err) {
       console.error('Salesforce error:', err);
     }
@@ -25,6 +31,13 @@ export async function GET() {
         appraisalsOrdered: salesforceMetrics?.daily.appraisalsOrdered || 0,
         submissions: salesforceMetrics?.daily.submissions || 0,
         salesMetrics: salesforceMetrics?.daily || null
+      },
+      yesterday: {
+        contactsMade: salesforceMetrics?.yesterday.contactsMade || 0,
+        applicationsTaken: salesforceMetrics?.yesterday.applicationsTaken || 0,
+        appraisalsOrdered: salesforceMetrics?.yesterday.appraisalsOrdered || 0,
+        submissions: salesforceMetrics?.yesterday.submissions || 0,
+        salesMetrics: salesforceMetrics?.yesterday || null
       },
       monthly: {
         contactsMade: salesforceMetrics?.monthly.contactsMade || 0,

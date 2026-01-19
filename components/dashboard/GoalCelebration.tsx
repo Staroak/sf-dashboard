@@ -194,7 +194,7 @@ export function GoalCelebration({ show, goalType, value, onClose }: GoalCelebrat
       // Auto-close after 8 seconds
       const timer = setTimeout(() => {
         handleClose();
-      }, 8000);
+      }, 15000);
 
       return () => clearTimeout(timer);
     }

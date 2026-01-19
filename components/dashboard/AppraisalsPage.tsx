@@ -18,6 +18,9 @@ interface AppraisalsPageProps {
   dailyAppraisals: number;
   monthlyAppraisals: number;
   brokers: BrokerStats[];
+  yesterdayContacts?: number;
+  yesterdayAppraisals?: number;
+  yesterdayBrokers?: BrokerStats[];
 }
 
 export function AppraisalsPage({
@@ -25,14 +28,17 @@ export function AppraisalsPage({
   dailyAppraisals,
   monthlyAppraisals,
   brokers,
+  yesterdayContacts,
+  yesterdayAppraisals,
+  yesterdayBrokers,
 }: AppraisalsPageProps) {
   return (
     <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
       {/* Top Stats Row */}
       <div className="flex items-center flex-shrink-0">
         <div className="flex items-center justify-between flex-1">
-          <SimpleStat value={dailyContacts} label="Contacts Made Today" color="blue" />
-          <SimpleStat value={dailyAppraisals} label="Appraisals Today" color="purple" />
+          <SimpleStat value={dailyContacts} label="Contacts Made Today" color="blue" previousValue={yesterdayContacts} />
+          <SimpleStat value={dailyAppraisals} label="Appraisals Today" color="purple" previousValue={yesterdayAppraisals} />
           <SimpleStat value={monthlyAppraisals} label="Appraisals This Month" color="purple" />
         </div>
         <BluePearl current={dailyAppraisals} goal={8} size="horizontal" />
@@ -42,9 +48,13 @@ export function AppraisalsPage({
       <div className="flex-1 min-h-0 overflow-hidden">
         <FullLeaderboard
           brokers={brokers}
+          yesterdayBrokers={yesterdayBrokers}
           metric="appraisalsOrdered"
           title="Today's Appraisals"
           dailyGoal={8}
+          goalCurrent={dailyAppraisals}
+          goalYesterday={yesterdayAppraisals}
+          goalLabel="Daily Goal"
         />
       </div>
     </div>

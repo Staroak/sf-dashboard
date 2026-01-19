@@ -14,19 +14,17 @@ interface BrokerStats {
   submissions: number;
 }
 
+interface PeriodStats {
+  contactsMade: number;
+  applicationsTaken: number;
+  appraisalsOrdered: number;
+  submissions: number;
+}
+
 interface SummaryPageProps {
-  daily: {
-    contactsMade: number;
-    applicationsTaken: number;
-    appraisalsOrdered: number;
-    submissions: number;
-  };
-  monthly: {
-    contactsMade: number;
-    applicationsTaken: number;
-    appraisalsOrdered: number;
-    submissions: number;
-  };
+  daily: PeriodStats;
+  monthly: PeriodStats;
+  yesterday?: PeriodStats;
   brokers: BrokerStats[];
 }
 
@@ -36,7 +34,7 @@ const DAILY_GOALS = {
   submissions: 6,
 };
 
-export function SummaryPage({ daily, monthly, brokers }: SummaryPageProps) {
+export function SummaryPage({ daily, monthly, yesterday, brokers }: SummaryPageProps) {
   return (
     <div className="h-full flex flex-col p-3 overflow-hidden">
       <div className="flex-1 grid grid-cols-12 gap-3 min-h-0">
@@ -51,6 +49,10 @@ export function SummaryPage({ daily, monthly, brokers }: SummaryPageProps) {
               applicationsTaken={daily.applicationsTaken}
               appraisalsOrdered={daily.appraisalsOrdered}
               submissions={daily.submissions}
+              previousContactsMade={yesterday?.contactsMade}
+              previousApplicationsTaken={yesterday?.applicationsTaken}
+              previousAppraisalsOrdered={yesterday?.appraisalsOrdered}
+              previousSubmissions={yesterday?.submissions}
               compact
             />
           </div>

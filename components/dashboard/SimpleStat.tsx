@@ -1,5 +1,6 @@
 "use client";
 
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type StatColor = "blue" | "green" | "purple" | "orange" | "cyan" | "pink";
@@ -9,6 +10,7 @@ interface SimpleStatProps {
   label: string;
   color?: StatColor;
   className?: string;
+  previousValue?: number | null;
 }
 
 const colorStyles: Record<StatColor, { value: string; label: string; bg: string; border: string }> = {
@@ -50,8 +52,26 @@ const colorStyles: Record<StatColor, { value: string; label: string; bg: string;
   },
 };
 
-export function SimpleStat({ value, label, color, className }: SimpleStatProps) {
+export function SimpleStat({ value, label, color, className, previousValue }: SimpleStatProps) {
   const styles = color ? colorStyles[color] : null;
+
+  // Calculate delta indicator
+  const showDelta = previousValue !== undefined && previousValue !== null;
+  const delta = showDelta ? value - previousValue : 0;
+  const isPositive = delta > 0;
+  const isNeutral = delta === 0;
+
+  const DeltaIndicator = showDelta ? (
+    <span
+      className={cn(
+        "flex items-center gap-1 text-sm font-semibold ml-2",
+        isNeutral ? "text-muted-foreground" : isPositive ? "text-green-500" : "text-red-500"
+      )}
+    >
+      {!isNeutral && (isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />)}
+      <span>{isPositive ? "+" : ""}{delta}</span>
+    </span>
+  ) : null;
 
   if (styles) {
     return (
@@ -64,6 +84,7 @@ export function SimpleStat({ value, label, color, className }: SimpleStatProps) 
         <span className={cn("text-5xl font-bold tabular-nums", styles.value)}>
           {value}
         </span>
+        {DeltaIndicator}
         <span className={cn("text-xl font-semibold", styles.label)}>
           {label}
         </span>
@@ -74,6 +95,7 @@ export function SimpleStat({ value, label, color, className }: SimpleStatProps) 
   return (
     <div className={cn("flex items-baseline gap-3", className)}>
       <span className="text-5xl font-bold tabular-nums">{value}</span>
+      {DeltaIndicator}
       <span className="text-xl font-semibold text-muted-foreground">{label}</span>
     </div>
   );
