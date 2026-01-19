@@ -424,10 +424,10 @@ export function BrokerCelebration({ show, brokerName, metricType, value, goal, o
       }));
       setConfetti(pieces);
 
-      // Auto-close after 6 seconds (shorter than team celebration)
+      // Auto-close after 25 seconds
       const timer = setTimeout(() => {
         handleClose();
-      }, 6000);
+      }, 25000);
 
       return () => clearTimeout(timer);
     }

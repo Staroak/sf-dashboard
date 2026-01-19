@@ -1,54 +1,93 @@
-// Team Leads and their team members
+// Team Configuration
 // ====================================
-// FILL IN TEAM MEMBER NAMES IN THESE ARRAYS
-// Names must match exactly what appears in Salesforce (broker.userName)
+// Each team has:
+//   - displayName: The name shown on the dashboard (customize this!)
+//   - leaderName: The team leader's Salesforce name (must match exactly)
+//   - members: Array of team member Salesforce names (must match exactly)
+//
+// The team leader's stats ARE included in the team totals.
 // ====================================
 
-export const TEAM_LEADS: Record<string, string[]> = {
-  "Jennifer Souvanvong": [
-    // Add team member names here, e.g.:
-    // "John Smith",
-    // "Jane Doe",
-    "Harick Brar",
-  ],
-  "Shaneen Mohammed": [
-    // Add team members...
-    "Renzo Mesia",
-    "Shiela Jamero",
-    "Megan Robertson",
-    "Parmeet Singh",
+interface TeamConfig {
+  displayName: string;      // What shows on the dashboard
+  leaderName: string;       // Team leader's Salesforce name (included in tally)
+  members: string[];        // Additional team members
+}
 
-  ],
-  "Stephanie Viaje": [
-    // Add team members...
-    "Rainer Manding",
-    "Garry Singh",
-    "Gurpreet Kaur",
-    "Natalie Pacheco",
-  
-  ],
-  "Brandon Viaje-Roque": [
-    // Add team members...
-    "Serg Martires",
-    "Alice Nabi",
-  ],
-  "Nav Cheema": [
-    // Add team members...
-    "Bowie Nan",
-    "Saihaj Cheema",
-    "Rahul Narula",
-    "Savraj Cheema",
-  ],
-  "Alika Walia": [
-    // Add team members...
-    "Gurjit Sandhu",
-    "Jaslen Perhar",
-  ],
-  "Brendan Wilson": [
-    // Add team members...
-    "Doyle Minhas",
-    "Gaurav Dadral",
-  ],
-};
+export const TEAMS: TeamConfig[] = [
+  {
+    displayName: "Team Jennifer",           // <-- Change this to customize display name
+    leaderName: "Jennifer Souvanvong",      // Team leader (included in totals)
+    members: [
+      "Harick Brar",
+    ],
+  },
+  {
+    displayName: "Team Shaneen",            // <-- Change this to customize display name
+    leaderName: "Shaneen Mohammed",
+    members: [
+      "Renzo Mesia",
+      "Shiela Jamero",
+      "Megan Robertson",
+      "Parmeet Singh",
+    ],
+  },
+  {
+    displayName: "Team Stephanie",          // <-- Change this to customize display name
+    leaderName: "Stephanie Viaje",
+    members: [
+      "Rainer Manding",
+      "Garry Singh",
+      "Gurpreet Kaur",
+      "Natalie Pacheco",
+    ],
+  },
+  {
+    displayName: "Team Brandon",            // <-- Change this to customize display name
+    leaderName: "Brandon Viaje-Roque",
+    members: [
+      "Serg Martires",
+      "Alice Nabi",
+    ],
+  },
+  {
+    displayName: "Team Nav",                // <-- Change this to customize display name
+    leaderName: "Nav Cheema",
+    members: [
+      "Bowie Nan",
+      "Saihaj Cheema",
+      "Rahul Narula",
+      "Savraj Cheema",
+    ],
+  },
+  {
+    displayName: "Team Alika",              // <-- Change this to customize display name
+    leaderName: "Alika Walia",
+    members: [
+      "Gurjit Sandhu",
+      "Jaslen Perhar",
+    ],
+  },
+  {
+    displayName: "Team Brendan",            // <-- Change this to customize display name
+    leaderName: "Brendan Wilson",
+    members: [
+      "Doyle Minhas",
+      "Gaurav Dadral",
+    ],
+  },
+];
 
-export const TEAM_LEAD_NAMES = Object.keys(TEAM_LEADS);
+// Helper to get all team members INCLUDING the leader
+export function getTeamMembers(team: TeamConfig): string[] {
+  return [team.leaderName, ...team.members];
+}
+
+// Legacy exports for backwards compatibility
+export const TEAM_LEADS: Record<string, string[]> = TEAMS.reduce((acc, team) => {
+  // Include leader in the members list for stats calculation
+  acc[team.displayName] = getTeamMembers(team);
+  return acc;
+}, {} as Record<string, string[]>);
+
+export const TEAM_LEAD_NAMES = TEAMS.map(team => team.displayName);
