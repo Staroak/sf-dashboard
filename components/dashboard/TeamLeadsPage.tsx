@@ -45,11 +45,18 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps)
         const teamMembers = TEAM_LEADS[teamLead];
 
         // Filter brokers to find team members
+        // Match by first name (first word) for more robust matching
         const teamBrokers = brokerList.filter((broker) =>
-          teamMembers.some((member) =>
-            broker.userName.toLowerCase().includes(member.toLowerCase()) ||
-            member.toLowerCase().includes(broker.userName.toLowerCase())
-          )
+          teamMembers.some((member) => {
+            const brokerFirstName = broker.userName.toLowerCase().split(/\s+/)[0];
+            const memberFirstName = member.toLowerCase().split(/\s+/)[0];
+            // Match if first names are equal, or if full names contain each other
+            return (
+              brokerFirstName === memberFirstName ||
+              broker.userName.toLowerCase().includes(member.toLowerCase()) ||
+              member.toLowerCase().includes(broker.userName.toLowerCase())
+            );
+          })
         );
 
         // Sum up the stats

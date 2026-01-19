@@ -18,13 +18,15 @@ const DAILY_GOALS = {
   submissions: 6,
 } as const;
 
-// Per-broker daily goals (applications only)
+// Per-broker daily goals
 const BROKER_DAILY_GOALS = {
   applications: 2,
+  appraisals: 2,
+  submissions: 2,
 } as const;
 
 type GoalType = keyof typeof DAILY_GOALS;
-type BrokerMetricType = 'applications';
+type BrokerMetricType = 'applications' | 'appraisals' | 'submissions';
 
 interface BrokerStats {
   userId: string;
@@ -201,7 +203,7 @@ export function Dashboard() {
     setCelebration(null);
   };
 
-  // Check for broker goal completions (applications only)
+  // Check for broker goal completions (applications, appraisals, submissions)
   useEffect(() => {
     if (!data?.daily.salesMetrics?.byBroker) return;
 
@@ -224,6 +226,30 @@ export function Dashboard() {
           goal: BROKER_DAILY_GOALS.applications,
         });
         setCelebratedBrokers(prev => new Set([...prev, appKey]));
+      }
+
+      // Check appraisals goal (2 per day)
+      const apprKey = `${broker.userId}-appraisals`;
+      if (broker.appraisalsOrdered >= BROKER_DAILY_GOALS.appraisals && !celebratedBrokers.has(apprKey)) {
+        newCelebrations.push({
+          brokerName: broker.userName,
+          metricType: 'appraisals',
+          value: broker.appraisalsOrdered,
+          goal: BROKER_DAILY_GOALS.appraisals,
+        });
+        setCelebratedBrokers(prev => new Set([...prev, apprKey]));
+      }
+
+      // Check submissions goal (2 per day)
+      const subKey = `${broker.userId}-submissions`;
+      if (broker.submissions >= BROKER_DAILY_GOALS.submissions && !celebratedBrokers.has(subKey)) {
+        newCelebrations.push({
+          brokerName: broker.userName,
+          metricType: 'submissions',
+          value: broker.submissions,
+          goal: BROKER_DAILY_GOALS.submissions,
+        });
+        setCelebratedBrokers(prev => new Set([...prev, subKey]));
       }
     }
 

@@ -36,7 +36,7 @@ export const TEAMS: TeamConfig[] = [
     displayName: "Team Stephanie",          // <-- Change this to customize display name
     leaderName: "Stephanie Viaje",
     members: [
-      "Rainer Manding",
+      "Ranier Manding",
       "Garry Singh",
       "Gurpreet Kaur",
       "Natalie Pacheco",
