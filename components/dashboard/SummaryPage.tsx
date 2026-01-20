@@ -30,8 +30,8 @@ interface SummaryPageProps {
 
 const DAILY_GOALS = {
   applications: 33,
-  appraisals: 8,
-  submissions: 6,
+  appraisals: 10,
+  submissions: 8,
 };
 
 export function SummaryPage({ daily, monthly, yesterday, brokers }: SummaryPageProps) {
