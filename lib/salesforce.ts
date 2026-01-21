@@ -20,6 +20,7 @@ export interface PeriodMetrics {
 
 export interface DashboardMetrics {
   daily: PeriodMetrics;
+  weekly: PeriodMetrics;
   monthly: PeriodMetrics;
   yesterday: PeriodMetrics;
   leaderboard: BrokerStats[];
@@ -41,10 +42,12 @@ interface TaskRecord {
 }
 
 class SalesforceService {
-  // Get Eastern timezone boundaries for today and this month
+  // Get Eastern timezone boundaries for today, this week, and this month
   private getDateBoundaries(daysOffset: number = 0): {
     todayStart: string;
     todayEnd: string;
+    weekStart: string;
+    weekEnd: string;
     monthStart: string;
     monthEnd: string;
   } {
@@ -79,6 +82,13 @@ class SalesforceService {
     const todayStart = new Date(Date.UTC(year, month - 1, targetDay, utcOffset, 0, 0, 0));
     const todayEnd = new Date(Date.UTC(year, month - 1, targetDay + 1, utcOffset, 0, 0, 0));
 
+    // This week's boundaries (Sunday to Saturday) in UTC
+    const currentDate = new Date(Date.UTC(year, month - 1, day, utcOffset, 0, 0, 0));
+    const dayOfWeek = currentDate.getUTCDay(); // 0 = Sunday
+    const weekStartDay = day - dayOfWeek; // Go back to Sunday
+    const weekStart = new Date(Date.UTC(year, month - 1, weekStartDay, utcOffset, 0, 0, 0));
+    const weekEnd = new Date(Date.UTC(year, month - 1, weekStartDay + 7, utcOffset, 0, 0, 0));
+
     // This month's boundaries in UTC
     const monthStart = new Date(Date.UTC(year, month - 1, 1, utcOffset, 0, 0, 0));
     const monthEnd = new Date(Date.UTC(year, month, 1, utcOffset, 0, 0, 0));
@@ -86,11 +96,14 @@ class SalesforceService {
     if (daysOffset === 0) {
       console.log(`Timezone: ${timezone}, DST: ${isDST}, UTC offset: ${utcOffset}`);
       console.log(`Today range: ${todayStart.toISOString()} to ${todayEnd.toISOString()}`);
+      console.log(`Week range: ${weekStart.toISOString()} to ${weekEnd.toISOString()}`);
     }
 
     return {
       todayStart: todayStart.toISOString(),
       todayEnd: todayEnd.toISOString(),
+      weekStart: weekStart.toISOString(),
+      weekEnd: weekEnd.toISOString(),
       monthStart: monthStart.toISOString(),
       monthEnd: monthEnd.toISOString()
     };
@@ -169,12 +182,17 @@ class SalesforceService {
 
   // Get Applications Taken (from Task object with Subject = 'Application Taken')
   // Uses deduplication to filter out tasks created within 1 second by same owner
-  private async getApplicationsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
+  private async getApplicationsCount(conn: Connection, period: 'daily' | 'weekly' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
     // Use explicit Eastern timezone date ranges to match Salesforce org timezone
     const boundaries = this.getDateBoundaries(daysOffset);
-    const dateFilter = period === 'daily'
-      ? `CreatedDate >= ${boundaries.todayStart} AND CreatedDate < ${boundaries.todayEnd}`
-      : `CreatedDate >= ${boundaries.monthStart} AND CreatedDate < ${boundaries.monthEnd}`;
+    let dateFilter: string;
+    if (period === 'daily') {
+      dateFilter = `CreatedDate >= ${boundaries.todayStart} AND CreatedDate < ${boundaries.todayEnd}`;
+    } else if (period === 'weekly') {
+      dateFilter = `CreatedDate >= ${boundaries.weekStart} AND CreatedDate < ${boundaries.weekEnd}`;
+    } else {
+      dateFilter = `CreatedDate >= ${boundaries.monthStart} AND CreatedDate < ${boundaries.monthEnd}`;
+    }
 
     // Query individual Task records for deduplication
     const query = `
@@ -216,12 +234,17 @@ class SalesforceService {
 
   // Get Contacts Made (sum of Application Taken, No Opportunity, Not Interested, Scheduled Follow Up)
   // Uses deduplication to filter out tasks created within 1 second by same owner with same subject
-  private async getContactsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
+  private async getContactsCount(conn: Connection, period: 'daily' | 'weekly' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
     // Use explicit Eastern timezone date ranges to match Salesforce org timezone
     const boundaries = this.getDateBoundaries(daysOffset);
-    const dateFilter = period === 'daily'
-      ? `CreatedDate >= ${boundaries.todayStart} AND CreatedDate < ${boundaries.todayEnd}`
-      : `CreatedDate >= ${boundaries.monthStart} AND CreatedDate < ${boundaries.monthEnd}`;
+    let dateFilter: string;
+    if (period === 'daily') {
+      dateFilter = `CreatedDate >= ${boundaries.todayStart} AND CreatedDate < ${boundaries.todayEnd}`;
+    } else if (period === 'weekly') {
+      dateFilter = `CreatedDate >= ${boundaries.weekStart} AND CreatedDate < ${boundaries.weekEnd}`;
+    } else {
+      dateFilter = `CreatedDate >= ${boundaries.monthStart} AND CreatedDate < ${boundaries.monthEnd}`;
+    }
 
     // Query individual Task records for deduplication
     // Contacts = Application Taken + No Opportunity + Not Interested + Scheduled Follow Up
@@ -263,12 +286,14 @@ class SalesforceService {
   }
 
   // Get Appraisals Ordered (using Appraisal_Date__c field - Date type)
-  private async getAppraisalsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
+  private async getAppraisalsCount(conn: Connection, period: 'daily' | 'weekly' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
     const objectName = process.env.SF_APPLICATION_OBJECT || 'Opportunity';
-    // Appraisal_Date__c is a Date field, compare directly with TODAY/THIS_MONTH/YESTERDAY
+    // Appraisal_Date__c is a Date field, compare directly with TODAY/THIS_WEEK/THIS_MONTH/YESTERDAY
     let dateFilter: string;
     if (period === 'daily') {
       dateFilter = daysOffset === -1 ? 'Appraisal_Date__c = YESTERDAY' : 'Appraisal_Date__c = TODAY';
+    } else if (period === 'weekly') {
+      dateFilter = 'Appraisal_Date__c = THIS_WEEK';
     } else {
       dateFilter = 'Appraisal_Date__c = THIS_MONTH';
     }
@@ -305,12 +330,14 @@ class SalesforceService {
   }
 
   // Get Submissions to Lender (using Date_Submitted__c field - Date type)
-  private async getSubmissionsCount(conn: Connection, period: 'daily' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
+  private async getSubmissionsCount(conn: Connection, period: 'daily' | 'weekly' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
     const objectName = process.env.SF_APPLICATION_OBJECT || 'Opportunity';
-    // Date_Submitted__c is a Date field, compare directly with TODAY/THIS_MONTH/YESTERDAY
+    // Date_Submitted__c is a Date field, compare directly with TODAY/THIS_WEEK/THIS_MONTH/YESTERDAY
     let dateFilter: string;
     if (period === 'daily') {
       dateFilter = daysOffset === -1 ? 'Date_Submitted__c = YESTERDAY' : 'Date_Submitted__c = TODAY';
+    } else if (period === 'weekly') {
+      dateFilter = 'Date_Submitted__c = THIS_WEEK';
     } else {
       dateFilter = 'Date_Submitted__c = THIS_MONTH';
     }
@@ -422,6 +449,12 @@ class SalesforceService {
     const yesterdayAppraisals = await this.getAppraisalsCount(conn, 'daily', brokerNames, -1);
     const yesterdaySubmissions = await this.getSubmissionsCount(conn, 'daily', brokerNames, -1);
 
+    console.log('Fetching weekly metrics...');
+    const weeklyContacts = await this.getContactsCount(conn, 'weekly', brokerNames);
+    const weeklyApplications = await this.getApplicationsCount(conn, 'weekly', brokerNames);
+    const weeklyAppraisals = await this.getAppraisalsCount(conn, 'weekly', brokerNames);
+    const weeklySubmissions = await this.getSubmissionsCount(conn, 'weekly', brokerNames);
+
     console.log('Fetching monthly metrics...');
     const monthlyContacts = await this.getContactsCount(conn, 'monthly', brokerNames);
     const monthlyApplications = await this.getApplicationsCount(conn, 'monthly', brokerNames);
@@ -445,6 +478,13 @@ class SalesforceService {
       brokerNames // Include all active users
     );
 
+    const weeklyBrokerStats = this.combineBrokerStats(
+      weeklyContacts.byBroker,
+      weeklyApplications.byBroker,
+      weeklyAppraisals.byBroker,
+      weeklySubmissions.byBroker
+    );
+
     const monthlyBrokerStats = this.combineBrokerStats(
       monthlyContacts.byBroker,
       monthlyApplications.byBroker,
@@ -466,6 +506,13 @@ class SalesforceService {
         appraisalsOrdered: yesterdayAppraisals.total,
         submissions: yesterdaySubmissions.total,
         byBroker: yesterdayBrokerStats
+      },
+      weekly: {
+        contactsMade: weeklyContacts.total,
+        applicationsTaken: weeklyApplications.total,
+        appraisalsOrdered: weeklyAppraisals.total,
+        submissions: weeklySubmissions.total,
+        byBroker: weeklyBrokerStats
       },
       monthly: {
         contactsMade: monthlyContacts.total,

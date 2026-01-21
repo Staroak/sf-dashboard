@@ -1,0 +1,20 @@
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+
+export const dynamic = 'force-dynamic'
+
+export default async function MobilePage() {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (user) {
+      redirect('/mobile/dashboard')
+    } else {
+      redirect('/mobile/login')
+    }
+  } catch {
+    // If Supabase isn't configured, redirect to login
+    redirect('/mobile/login')
+  }
+}

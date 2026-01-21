@@ -532,3 +532,38 @@ html, body {
 .animate-pearl-entrance {
   animation: pearl-entrance 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
+
+/* ===== MOBILE GRID BACKGROUND ===== */
+/* White grid lines with white dots at intersections */
+.mobile-grid-dots {
+  --grid-size: 24px;
+  --dot-size: 2px;
+  --line-color: rgba(255, 255, 255, 0.06);
+  --dot-color: rgba(255, 255, 255, 0.15);
+
+  background-image:
+    /* Horizontal lines */
+    linear-gradient(to bottom, var(--line-color) 1px, transparent 1px),
+    /* Vertical lines */
+    linear-gradient(to right, var(--line-color) 1px, transparent 1px),
+    /* Dots at intersections */
+    radial-gradient(
+      circle at center,
+      var(--dot-color) var(--dot-size),
+      transparent var(--dot-size)
+    );
+  background-size:
+    var(--grid-size) var(--grid-size),
+    var(--grid-size) var(--grid-size),
+    var(--grid-size) var(--grid-size);
+  background-position: 0 0;
+}
+
+/* iOS Safe Area Padding */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-pt {
+  padding-top: env(safe-area-inset-top, 0px);
+}

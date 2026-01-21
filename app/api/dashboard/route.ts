@@ -39,6 +39,13 @@ export async function GET() {
         submissions: salesforceMetrics?.yesterday.submissions || 0,
         salesMetrics: salesforceMetrics?.yesterday || null
       },
+      weekly: {
+        contactsMade: salesforceMetrics?.weekly.contactsMade || 0,
+        applicationsTaken: salesforceMetrics?.weekly.applicationsTaken || 0,
+        appraisalsOrdered: salesforceMetrics?.weekly.appraisalsOrdered || 0,
+        submissions: salesforceMetrics?.weekly.submissions || 0,
+        salesMetrics: salesforceMetrics?.weekly || null
+      },
       monthly: {
         contactsMade: salesforceMetrics?.monthly.contactsMade || 0,
         applicationsTaken: salesforceMetrics?.monthly.applicationsTaken || 0,

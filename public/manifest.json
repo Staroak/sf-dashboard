@@ -1,0 +1,34 @@
+{
+  "name": "Blue Pearl Executive Dashboard",
+  "short_name": "BP Dashboard",
+  "description": "Sales performance insights for Blue Pearl Mortgage executives",
+  "start_url": "/mobile/dashboard",
+  "scope": "/mobile",
+  "display": "standalone",
+  "background_color": "#021a34",
+  "theme_color": "#0a5694",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "en-US",
+  "dir": "ltr"
+}
