@@ -90,8 +90,8 @@ const PAGE_DURATIONS: Record<PageType, number> = {
   applications: 11000,
   appraisals: 11000,
   submissions: 11000,
-  teamleads: 30000,  // 30 seconds for team leads
-  summary: 11000,
+  teamleads: 25000,  // 30 seconds for team leads
+  summary: 20000, // 20 secs for summary page
 };
 
 export function Dashboard() {

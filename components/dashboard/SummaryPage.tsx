@@ -75,7 +75,7 @@ export function SummaryPage({ daily, monthly, yesterday, brokers }: SummaryPageP
             {/* Rotating Leaderboard */}
             <RotatingLeaderboard
               brokers={brokers}
-              rotationInterval={3600}
+              rotationInterval={6000}
             />
 
             {/* Rotating Quotes and Tips */}
