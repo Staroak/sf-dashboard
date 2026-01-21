@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import { AuthProvider } from "@/providers/AuthProvider"
+import { MobileLayoutClient } from "@/components/mobile"
 
 export const metadata: Metadata = {
   title: "Blue Pearl Dashboard",
@@ -27,9 +28,9 @@ export default function MobileLayout({
 }) {
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-pearl-950 text-white overflow-x-hidden">
+      <MobileLayoutClient>
         {children}
-      </div>
+      </MobileLayoutClient>
     </AuthProvider>
   )
 }

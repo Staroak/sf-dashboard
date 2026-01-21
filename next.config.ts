@@ -5,6 +5,11 @@ const withPWA = withPWAInit({
   dest: "public",
   register: true,
   disable: process.env.NODE_ENV === "development",
+  reloadOnOnline: true,
+  cacheOnFrontEndNav: false,
+  fallbacks: {
+    document: "/mobile/login",
+  },
 });
 
 const nextConfig: NextConfig = {
