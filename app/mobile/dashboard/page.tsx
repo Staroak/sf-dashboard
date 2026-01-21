@@ -200,10 +200,10 @@ export default function MobileDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-pearl-950 mobile-grid-dots flex flex-col">
+    <div className="h-screen bg-pearl-950 mobile-grid-dots flex flex-col overflow-hidden">
       <MobileHeader userName={userName} />
       
-      <main className="flex-1 px-4 py-3 pb-24 overflow-y-auto flex flex-col">
+      <main className="flex-1 px-4 py-3 pb-24 overflow-y-auto flex flex-col min-h-0">
         {/* Pull to refresh indicator */}
         {isRefreshing && (
           <div className="flex justify-center mb-2">
