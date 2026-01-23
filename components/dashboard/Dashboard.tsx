@@ -157,7 +157,7 @@ export function Dashboard() {
           celebrationAudioRef.current.pause();
           celebrationAudioRef.current.currentTime = 0;
         }
-      }, 6000);
+      }, 6000); // change here to change sound timeout
     } catch (err) {
       console.log('Audio error:', err);
     }
