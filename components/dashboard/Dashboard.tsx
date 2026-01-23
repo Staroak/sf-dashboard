@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { RefreshCw, Wifi, WifiOff, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ApplicationsPage } from "./ApplicationsPage";
 import { AppraisalsPage } from "./AppraisalsPage";
 import { SubmissionsPage } from "./SubmissionsPage";
 import { TeamLeadsPage } from "./TeamLeadsPage";
+import { WeeklyTeamPage } from "./WeeklyTeamPage";
 import { SummaryPage } from "./SummaryPage";
 import { ThemeToggle } from "./ThemeToggle";
 import { GoalCelebration, BrokerCelebration } from "./GoalCelebration";
@@ -68,13 +69,14 @@ interface DashboardData {
   timestamp: string;
   daily: PeriodData;
   yesterday: PeriodData;
+  weekly: PeriodData;
   monthly: PeriodData;
   leaderboard: BrokerStats[];
 }
 
 const REFRESH_INTERVAL = 10000; // 10 seconds
 
-const PAGES = ["applications", "appraisals", "submissions", "teamleads", "summary"] as const;
+const PAGES = ["applications", "appraisals", "submissions", "teamleads", "weeklyteam", "summary"] as const;
 type PageType = typeof PAGES[number];
 
 const PAGE_LABELS: Record<PageType, string> = {
@@ -82,6 +84,7 @@ const PAGE_LABELS: Record<PageType, string> = {
   appraisals: "Appraisals",
   submissions: "Submissions",
   teamleads: "Team Leads",
+  weeklyteam: "Weekly Team",
   summary: "Summary",
 };
 
@@ -90,8 +93,9 @@ const PAGE_DURATIONS: Record<PageType, number> = {
   applications: 11000,
   appraisals: 11000,
   submissions: 11000,
-  teamleads: 25000,  // 30 seconds for team leads
-  summary: 20000, // 20 secs for summary page
+  teamleads: 25000,  // 25 seconds for team leads
+  weeklyteam: 25000, // 25 seconds for weekly team
+  summary: 40000, // 40 secs for summary page
 };
 
 export function Dashboard() {
@@ -127,6 +131,37 @@ export function Dashboard() {
     value: number;
     goal: number;
   }>>([]);
+
+  // Audio ref for celebration sound
+  const celebrationAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Play celebration sound (loops until stopped)
+  const playCelebrationSound = useCallback(() => {
+    try {
+      if (!celebrationAudioRef.current) {
+        celebrationAudioRef.current = new Audio('/sounds/goal-reached.mp3');
+      }
+      celebrationAudioRef.current.loop = true;
+      celebrationAudioRef.current.currentTime = 0;
+      celebrationAudioRef.current.play().catch(err => {
+        console.log('Audio play failed:', err);
+      });
+    } catch (err) {
+      console.log('Audio error:', err);
+    }
+  }, []);
+
+  // Stop celebration sound
+  const stopCelebrationSound = useCallback(() => {
+    try {
+      if (celebrationAudioRef.current) {
+        celebrationAudioRef.current.pause();
+        celebrationAudioRef.current.currentTime = 0;
+      }
+    } catch (err) {
+      console.log('Audio stop error:', err);
+    }
+  }, []);
 
   const fetchData = useCallback(async (isManual = false) => {
     if (isManual) {
@@ -211,12 +246,14 @@ export function Dashboard() {
         // Trigger celebration for this goal
         setCelebration({ show: true, type: metric.type, value: metric.value });
         setCelebratedGoals(prev => new Set([...prev, metric.type]));
+        playCelebrationSound();
         break; // Only celebrate one goal at a time
       }
     }
-  }, [data, celebratedGoals]);
+  }, [data, celebratedGoals, playCelebrationSound]);
 
   const handleCloseCelebration = () => {
+    stopCelebrationSound();
     setCelebration(null);
   };
 
@@ -287,10 +324,12 @@ export function Dashboard() {
       const [next, ...rest] = brokerCelebrationQueue;
       setBrokerCelebration({ show: true, ...next });
       setBrokerCelebrationQueue(rest);
+      playCelebrationSound();
     }
-  }, [brokerCelebrationQueue, brokerCelebration, celebration]);
+  }, [brokerCelebrationQueue, brokerCelebration, celebration, playCelebrationSound]);
 
   const handleCloseBrokerCelebration = () => {
+    stopCelebrationSound();
     setBrokerCelebration(null);
   };
 
@@ -311,6 +350,7 @@ export function Dashboard() {
   // Get broker stats for leaderboards
   const dailyBrokers: BrokerStats[] = data?.daily.salesMetrics?.byBroker || [];
   const yesterdayBrokers: BrokerStats[] = data?.yesterday?.salesMetrics?.byBroker || [];
+  const weeklyBrokers: BrokerStats[] = data?.weekly?.salesMetrics?.byBroker || [];
   const monthlyBrokers: BrokerStats[] = data?.monthly.salesMetrics?.byBroker || data?.leaderboard || [];
 
   // Get current time formatted
@@ -377,6 +417,8 @@ export function Dashboard() {
         );
       case "teamleads":
         return <TeamLeadsPage brokers={dailyBrokers} yesterdayBrokers={yesterdayBrokers} />;
+      case "weeklyteam":
+        return <WeeklyTeamPage brokers={weeklyBrokers} />;
       case "summary":
         return (
           <SummaryPage
