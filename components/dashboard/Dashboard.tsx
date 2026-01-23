@@ -134,18 +134,30 @@ export function Dashboard() {
 
   // Audio ref for celebration sound
   const celebrationAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Play celebration sound (loops until stopped)
+  // Play celebration sound (plays for 6 seconds)
   const playCelebrationSound = useCallback(() => {
     try {
       if (!celebrationAudioRef.current) {
         celebrationAudioRef.current = new Audio('/sounds/goal-reached.mp3');
       }
-      celebrationAudioRef.current.loop = true;
+      celebrationAudioRef.current.loop = false;
       celebrationAudioRef.current.currentTime = 0;
       celebrationAudioRef.current.play().catch(err => {
         console.log('Audio play failed:', err);
       });
+
+      // Stop after 6 seconds
+      if (audioTimeoutRef.current) {
+        clearTimeout(audioTimeoutRef.current);
+      }
+      audioTimeoutRef.current = setTimeout(() => {
+        if (celebrationAudioRef.current) {
+          celebrationAudioRef.current.pause();
+          celebrationAudioRef.current.currentTime = 0;
+        }
+      }, 6000);
     } catch (err) {
       console.log('Audio error:', err);
     }
@@ -154,6 +166,9 @@ export function Dashboard() {
   // Stop celebration sound
   const stopCelebrationSound = useCallback(() => {
     try {
+      if (audioTimeoutRef.current) {
+        clearTimeout(audioTimeoutRef.current);
+      }
       if (celebrationAudioRef.current) {
         celebrationAudioRef.current.pause();
         celebrationAudioRef.current.currentTime = 0;
