@@ -5,6 +5,7 @@ export interface BrokerStats {
   userId: string;
   userName: string;
   contactsMade: number;
+  closedWon: number;
   applicationsTaken: number;
   appraisalsOrdered: number;
   submissions: number;
@@ -12,6 +13,7 @@ export interface BrokerStats {
 
 export interface PeriodMetrics {
   contactsMade: number;
+  closedWon: number;
   applicationsTaken: number;
   appraisalsOrdered: number;
   submissions: number;
@@ -373,10 +375,55 @@ class SalesforceService {
     }
   }
 
-  // Combine broker stats from all four metrics
+  // Get Closed Won deals (Opportunities with StageName = 'Closed Won')
+  private async getClosedWonCount(conn: Connection, period: 'daily' | 'weekly' | 'monthly', brokerNames: Map<string, string>, daysOffset: number = 0): Promise<{ total: number; byBroker: Map<string, { name: string; count: number }> }> {
+    const objectName = process.env.SF_APPLICATION_OBJECT || 'Opportunity';
+    // CloseDate is a Date field, compare directly with TODAY/THIS_WEEK/THIS_MONTH/YESTERDAY
+    let dateFilter: string;
+    if (period === 'daily') {
+      dateFilter = daysOffset === -1 ? 'CloseDate = YESTERDAY' : 'CloseDate = TODAY';
+    } else if (period === 'weekly') {
+      dateFilter = 'CloseDate = THIS_WEEK';
+    } else {
+      dateFilter = 'CloseDate = THIS_MONTH';
+    }
+
+    const query = `
+      SELECT OwnerId, COUNT(Id) total
+      FROM ${objectName}
+      WHERE StageName = 'Closed Won' AND ${dateFilter}
+      GROUP BY OwnerId
+      ORDER BY COUNT(Id) DESC
+    `;
+
+    try {
+      const result = await conn.query(query);
+      const records = result.records as QueryRecord[];
+
+      let totalCount = 0;
+      const byBroker = new Map<string, { name: string; count: number }>();
+
+      for (const record of records) {
+        const count = (record.total || record.expr0 || 0) as number;
+        totalCount += count;
+        const ownerId = (record.OwnerId || 'unknown') as string;
+        const ownerName = brokerNames.get(ownerId) || 'Unknown';
+        byBroker.set(ownerId, { name: ownerName, count });
+      }
+
+      console.log(`${period} closed won: ${totalCount}`);
+      return { total: totalCount, byBroker };
+    } catch (error) {
+      console.error(`Error fetching ${period} closed won:`, error);
+      return { total: 0, byBroker: new Map() };
+    }
+  }
+
+  // Combine broker stats from all five metrics
   // If allBrokerNames is provided, include all brokers (even with 0 activity)
   private combineBrokerStats(
     contacts: Map<string, { name: string; count: number }>,
+    closedWon: Map<string, { name: string; count: number }>,
     applications: Map<string, { name: string; count: number }>,
     appraisals: Map<string, { name: string; count: number }>,
     submissions: Map<string, { name: string; count: number }>,
@@ -387,6 +434,7 @@ class SalesforceService {
       ? new Set(allBrokerNames.keys())
       : new Set([
           ...contacts.keys(),
+          ...closedWon.keys(),
           ...applications.keys(),
           ...appraisals.keys(),
           ...submissions.keys()
@@ -396,17 +444,19 @@ class SalesforceService {
 
     for (const oderId of allBrokerIds) {
       const contData = contacts.get(oderId);
+      const closedData = closedWon.get(oderId);
       const appData = applications.get(oderId);
       const apprData = appraisals.get(oderId);
       const subData = submissions.get(oderId);
 
       // Get broker name from allBrokerNames first, then from activity data
-      const brokerName = allBrokerNames?.get(oderId) || contData?.name || appData?.name || apprData?.name || subData?.name || 'Unknown';
+      const brokerName = allBrokerNames?.get(oderId) || contData?.name || closedData?.name || appData?.name || apprData?.name || subData?.name || 'Unknown';
 
       brokerStats.push({
         userId: oderId,
         userName: brokerName,
         contactsMade: contData?.count || 0,
+        closedWon: closedData?.count || 0,
         applicationsTaken: appData?.count || 0,
         appraisalsOrdered: apprData?.count || 0,
         submissions: subData?.count || 0
@@ -422,11 +472,12 @@ class SalesforceService {
     const conn = await this.connect();
     const brokerNames = await this.getBrokerNames(conn);
     const contacts = await this.getContactsCount(conn, 'monthly', brokerNames);
+    const closedWon = await this.getClosedWonCount(conn, 'monthly', brokerNames);
     const appraisals = await this.getAppraisalsCount(conn, 'monthly', brokerNames);
     const applications = await this.getApplicationsCount(conn, 'monthly', brokerNames);
     const submissions = await this.getSubmissionsCount(conn, 'monthly', brokerNames);
 
-    const combined = this.combineBrokerStats(contacts.byBroker, applications.byBroker, appraisals.byBroker, submissions.byBroker);
+    const combined = this.combineBrokerStats(contacts.byBroker, closedWon.byBroker, applications.byBroker, appraisals.byBroker, submissions.byBroker);
     return combined.slice(0, 5);
   }
 
@@ -439,24 +490,28 @@ class SalesforceService {
     // Run all queries sequentially to avoid rate limits
     console.log('Fetching daily metrics...');
     const dailyContacts = await this.getContactsCount(conn, 'daily', brokerNames);
+    const dailyClosedWon = await this.getClosedWonCount(conn, 'daily', brokerNames);
     const dailyApplications = await this.getApplicationsCount(conn, 'daily', brokerNames);
     const dailyAppraisals = await this.getAppraisalsCount(conn, 'daily', brokerNames);
     const dailySubmissions = await this.getSubmissionsCount(conn, 'daily', brokerNames);
 
     console.log('Fetching yesterday metrics...');
     const yesterdayContacts = await this.getContactsCount(conn, 'daily', brokerNames, -1);
+    const yesterdayClosedWon = await this.getClosedWonCount(conn, 'daily', brokerNames, -1);
     const yesterdayApplications = await this.getApplicationsCount(conn, 'daily', brokerNames, -1);
     const yesterdayAppraisals = await this.getAppraisalsCount(conn, 'daily', brokerNames, -1);
     const yesterdaySubmissions = await this.getSubmissionsCount(conn, 'daily', brokerNames, -1);
 
     console.log('Fetching weekly metrics...');
     const weeklyContacts = await this.getContactsCount(conn, 'weekly', brokerNames);
+    const weeklyClosedWon = await this.getClosedWonCount(conn, 'weekly', brokerNames);
     const weeklyApplications = await this.getApplicationsCount(conn, 'weekly', brokerNames);
     const weeklyAppraisals = await this.getAppraisalsCount(conn, 'weekly', brokerNames);
     const weeklySubmissions = await this.getSubmissionsCount(conn, 'weekly', brokerNames);
 
     console.log('Fetching monthly metrics...');
     const monthlyContacts = await this.getContactsCount(conn, 'monthly', brokerNames);
+    const monthlyClosedWon = await this.getClosedWonCount(conn, 'monthly', brokerNames);
     const monthlyApplications = await this.getApplicationsCount(conn, 'monthly', brokerNames);
     const monthlyAppraisals = await this.getAppraisalsCount(conn, 'monthly', brokerNames);
     const monthlySubmissions = await this.getSubmissionsCount(conn, 'monthly', brokerNames);
@@ -464,6 +519,7 @@ class SalesforceService {
     // Combine broker stats - include all brokers for daily (even with 0 activity)
     const dailyBrokerStats = this.combineBrokerStats(
       dailyContacts.byBroker,
+      dailyClosedWon.byBroker,
       dailyApplications.byBroker,
       dailyAppraisals.byBroker,
       dailySubmissions.byBroker,
@@ -472,6 +528,7 @@ class SalesforceService {
 
     const yesterdayBrokerStats = this.combineBrokerStats(
       yesterdayContacts.byBroker,
+      yesterdayClosedWon.byBroker,
       yesterdayApplications.byBroker,
       yesterdayAppraisals.byBroker,
       yesterdaySubmissions.byBroker,
@@ -480,6 +537,7 @@ class SalesforceService {
 
     const weeklyBrokerStats = this.combineBrokerStats(
       weeklyContacts.byBroker,
+      weeklyClosedWon.byBroker,
       weeklyApplications.byBroker,
       weeklyAppraisals.byBroker,
       weeklySubmissions.byBroker
@@ -487,6 +545,7 @@ class SalesforceService {
 
     const monthlyBrokerStats = this.combineBrokerStats(
       monthlyContacts.byBroker,
+      monthlyClosedWon.byBroker,
       monthlyApplications.byBroker,
       monthlyAppraisals.byBroker,
       monthlySubmissions.byBroker
@@ -495,6 +554,7 @@ class SalesforceService {
     return {
       daily: {
         contactsMade: dailyContacts.total,
+        closedWon: dailyClosedWon.total,
         applicationsTaken: dailyApplications.total,
         appraisalsOrdered: dailyAppraisals.total,
         submissions: dailySubmissions.total,
@@ -502,6 +562,7 @@ class SalesforceService {
       },
       yesterday: {
         contactsMade: yesterdayContacts.total,
+        closedWon: yesterdayClosedWon.total,
         applicationsTaken: yesterdayApplications.total,
         appraisalsOrdered: yesterdayAppraisals.total,
         submissions: yesterdaySubmissions.total,
@@ -509,6 +570,7 @@ class SalesforceService {
       },
       weekly: {
         contactsMade: weeklyContacts.total,
+        closedWon: weeklyClosedWon.total,
         applicationsTaken: weeklyApplications.total,
         appraisalsOrdered: weeklyAppraisals.total,
         submissions: weeklySubmissions.total,
@@ -516,6 +578,7 @@ class SalesforceService {
       },
       monthly: {
         contactsMade: monthlyContacts.total,
+        closedWon: monthlyClosedWon.total,
         applicationsTaken: monthlyApplications.total,
         appraisalsOrdered: monthlyAppraisals.total,
         submissions: monthlySubmissions.total,

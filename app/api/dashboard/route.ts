@@ -27,6 +27,7 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       daily: {
         contactsMade: salesforceMetrics?.daily.contactsMade || 0,
+        closedWon: salesforceMetrics?.daily.closedWon || 0,
         applicationsTaken: salesforceMetrics?.daily.applicationsTaken || 0,
         appraisalsOrdered: salesforceMetrics?.daily.appraisalsOrdered || 0,
         submissions: salesforceMetrics?.daily.submissions || 0,
@@ -34,6 +35,7 @@ export async function GET() {
       },
       yesterday: {
         contactsMade: salesforceMetrics?.yesterday.contactsMade || 0,
+        closedWon: salesforceMetrics?.yesterday.closedWon || 0,
         applicationsTaken: salesforceMetrics?.yesterday.applicationsTaken || 0,
         appraisalsOrdered: salesforceMetrics?.yesterday.appraisalsOrdered || 0,
         submissions: salesforceMetrics?.yesterday.submissions || 0,
@@ -41,6 +43,7 @@ export async function GET() {
       },
       weekly: {
         contactsMade: salesforceMetrics?.weekly.contactsMade || 0,
+        closedWon: salesforceMetrics?.weekly.closedWon || 0,
         applicationsTaken: salesforceMetrics?.weekly.applicationsTaken || 0,
         appraisalsOrdered: salesforceMetrics?.weekly.appraisalsOrdered || 0,
         submissions: salesforceMetrics?.weekly.submissions || 0,
@@ -48,6 +51,7 @@ export async function GET() {
       },
       monthly: {
         contactsMade: salesforceMetrics?.monthly.contactsMade || 0,
+        closedWon: salesforceMetrics?.monthly.closedWon || 0,
         applicationsTaken: salesforceMetrics?.monthly.applicationsTaken || 0,
         appraisalsOrdered: salesforceMetrics?.monthly.appraisalsOrdered || 0,
         submissions: salesforceMetrics?.monthly.submissions || 0,

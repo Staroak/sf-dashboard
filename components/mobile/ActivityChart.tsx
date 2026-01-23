@@ -8,13 +8,13 @@ interface ActivityChartProps {
     applications: number
     appraisals: number
     submissions: number
-    contacts: number
+    closed: number
   }
   className?: string
 }
 
 export function ActivityChart({ data, className }: ActivityChartProps) {
-  const total = data.applications + data.appraisals + data.submissions + data.contacts
+  const total = data.applications + data.appraisals + data.submissions + data.closed
   
   const segments = useMemo(() => {
     if (total === 0) return []
@@ -23,7 +23,7 @@ export function ActivityChart({ data, className }: ActivityChartProps) {
       { label: 'Apps', value: data.applications, color: 'bg-[#4da6db]', percent: (data.applications / total) * 100 },
       { label: 'Appr', value: data.appraisals, color: 'bg-[#a0aec0]', percent: (data.appraisals / total) * 100 },
       { label: 'Subs', value: data.submissions, color: 'bg-[#e8edf2]', percent: (data.submissions / total) * 100 },
-      { label: 'Cont', value: data.contacts, color: 'bg-[#0d6ebd]', percent: (data.contacts / total) * 100 },
+      { label: 'Closed', value: data.closed, color: 'bg-[#0d6ebd]', percent: (data.closed / total) * 100 },
     ].filter(s => s.value > 0)
   }, [data, total])
 

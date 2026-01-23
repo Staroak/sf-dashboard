@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { FileText, ClipboardCheck, Send, Phone } from 'lucide-react'
+import { FileText, ClipboardCheck, Send, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/providers/AuthProvider'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { MobileNav, MobileHeader, MetricCard, TimePeriodSelect, MiniLeaderboard, OfflineNotice, ActivityChart } from '@/components/mobile'
@@ -30,6 +30,7 @@ interface BrokerStats {
   userId: string
   userName: string
   contactsMade: number
+  closedWon: number
   applicationsTaken: number
   appraisalsOrdered: number
   submissions: number
@@ -37,6 +38,7 @@ interface BrokerStats {
 
 interface PeriodData {
   contactsMade: number
+  closedWon: number
   applicationsTaken: number
   appraisalsOrdered: number
   submissions: number
@@ -240,9 +242,9 @@ export default function MobileDashboardPage() {
             compact
           />
           <MetricCard
-            title="Contacts"
-            value={periodData?.contactsMade || 0}
-            icon={Phone}
+            title="Closed Deals"
+            value={periodData?.closedWon || 0}
+            icon={CheckCircle}
             compact
           />
         </div>
@@ -253,7 +255,7 @@ export default function MobileDashboardPage() {
             applications: periodData?.applicationsTaken || 0,
             appraisals: periodData?.appraisalsOrdered || 0,
             submissions: periodData?.submissions || 0,
-            contacts: periodData?.contactsMade || 0,
+            closed: periodData?.closedWon || 0,
           }}
           className="mb-2"
         />
