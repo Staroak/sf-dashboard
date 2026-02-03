@@ -7,7 +7,7 @@ interface CacheEntry<T> {
 }
 
 const cache: Record<string, CacheEntry<unknown>> = {}
-const CACHE_TTL = 60000 // 1 minute
+const CACHE_TTL = 300000 // 30 minute
 
 export function getCached<T>(key: string): T | null {
   const entry = cache[key]
