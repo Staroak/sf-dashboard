@@ -30,7 +30,7 @@ export function MapFilters({
   className,
 }: MapFiltersProps) {
   return (
-    <div className={cn("flex items-center gap-2 px-4 py-3 bg-black/40 border-b border-white/10", className)}>
+    <div className={cn("flex items-center gap-2 px-4 py-3 bg-black/40 border-b border-white/10 relative z-[1000]", className)}>
       <Select
         value={province?.toString() ?? "all"}
         onValueChange={(v) => onProvinceChange(v === "all" ? null : parseInt(v, 10))}
@@ -41,7 +41,7 @@ export function MapFilters({
         >
           <SelectValue placeholder="Province" />
         </SelectTrigger>
-        <SelectContent className="bg-pearl-900 border-[#1a6aa8]/40">
+        <SelectContent className="bg-black border-[#1a6aa8]/40 z-[1001]">
           <SelectItem value="all" className="text-white text-xs">
             All Provinces
           </SelectItem>
@@ -67,7 +67,7 @@ export function MapFilters({
         >
           <SelectValue placeholder="Status" />
         </SelectTrigger>
-        <SelectContent className="bg-pearl-900 border-[#1a6aa8]/40">
+        <SelectContent className="bg-black border-[#1a6aa8]/40 z-[1001]">
           <SelectItem value="all" className="text-white text-xs">
             All Statuses
           </SelectItem>
