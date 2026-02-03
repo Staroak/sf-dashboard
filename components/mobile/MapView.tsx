@@ -52,7 +52,7 @@ function createCustomIcon(count: number) {
 }
 
 // Create custom cluster icon
-function createClusterIcon(cluster: L.MarkerCluster) {
+function createClusterIcon(cluster: { getChildCount: () => number }) {
   const count = cluster.getChildCount()
   const size = Math.min(50, 30 + Math.log(count + 1) * 6)
 
