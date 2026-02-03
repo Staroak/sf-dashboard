@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Trophy, Settings } from 'lucide-react'
+import { Home, Trophy, Settings, Map } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
   { href: '/mobile/dashboard', icon: Home, label: 'Home' },
   { href: '/mobile/leaderboard', icon: Trophy, label: 'Board' },
+  { href: '/mobile/map', icon: Map, label: 'Map' },
   { href: '/mobile/settings', icon: Settings, label: 'More' },
 ]
 
@@ -19,7 +20,7 @@ export function MobileNav() {
       <div className="flex items-center justify-around px-2 py-2.5">
         {navItems.map((item) => {
           const isActive = pathname === item.href ||
-            (item.href !== '/mobile/dashboard' && pathname.startsWith(item.href.split('/').slice(0, 3).join('/')))
+            (item.href !== '/mobile/dashboard' && pathname.startsWith(item.href))
 
           return (
             <Link

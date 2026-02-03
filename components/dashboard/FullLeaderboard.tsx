@@ -87,7 +87,7 @@ const tier1Icons = [
 // List of valid broker names (from Salesforce)
 const VALID_BROKERS = [
   'Alice Nabi', 'Alika Walia', 'Baldip Nijjar', 'Bowie Nan', 'Brandon Viaje-Roque', 'Brendan Wilson',
-  'Charlene Smith', 'Doyle Minhas', 'Garry Singh', 'Gaurav Dadral', 'Gurjit Sandhu',
+  'Caitlyn Chretien', 'Charlene Smith', 'Doyle Minhas', 'Garry Singh', 'Gaurav Dadral', 'Gurjit Sandhu',
   'Gurpreet Kaur', 'Harick Brar', 'Jaslene Perhar', 'Jennifer Souvanvong', 'Karny Mehat',
   'Lesly Camaclang', 'Mindy Basran', 'Natalie Pacheco', 'Nav Cheema', 'Olaf Durkowski',
   'Parmeet Singh', 'Rahul Narula', 'Ranier Manding', 'Renzo Mesia', 'Saihaj Cheema',
@@ -146,12 +146,12 @@ export function FullLeaderboard({
   const sortedBrokers = Array.from(brokerMap.values())
     .sort((a, b) => b[metric] - a[metric]);
 
-  // Group by tiers: 7, 8, 8, 9 = 32 total
+  // Group by tiers: 7, 8, 9, 9 = 33 total
   const tiers = [
     { brokers: sortedBrokers.slice(0, 7), startRank: 1, tier: 0 },
     { brokers: sortedBrokers.slice(7, 15), startRank: 8, tier: 1 },
-    { brokers: sortedBrokers.slice(15, 23), startRank: 16, tier: 2 },
-    { brokers: sortedBrokers.slice(23, 32), startRank: 24, tier: 3 },
+    { brokers: sortedBrokers.slice(15, 24), startRank: 16, tier: 2 },
+    { brokers: sortedBrokers.slice(24, 33), startRank: 25, tier: 3 },
   ];
 
   return (
