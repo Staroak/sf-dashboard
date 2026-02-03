@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import L from 'leaflet'
-import { MAP_CONFIG, getMarkerColor, type District, type Neighborhood } from '@/lib/map-config'
+import { MAP_CONFIG, type District, type Neighborhood } from '@/lib/map-config'
 import { MapPopup } from './MapPopup'
 
 interface MapViewProps {
@@ -24,30 +24,32 @@ function fixLeafletIcons() {
   })
 }
 
-// Create custom circle icon with count
+// Create custom pin icon with count
 function createCustomIcon(count: number) {
-  const color = getMarkerColor(count)
-  const size = Math.min(44, 24 + Math.log(count + 1) * 5)
+  const width = 32
+  const height = 44
 
   return L.divIcon({
     className: 'custom-marker',
-    html: `<div style="
-      width: ${size}px;
-      height: ${size}px;
-      background: ${color};
-      border: 2px solid white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: ${size > 32 ? '12px' : '10px'};
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    ">${count}</div>`,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-    popupAnchor: [0, -size / 2],
+    html: `<div style="position: relative; width: ${width}px; height: ${height}px;">
+      <svg viewBox="0 0 32 44" width="${width}" height="${height}" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+        <path d="M16 0C7.163 0 0 7.163 0 16c0 12 16 28 16 28s16-16 16-28C32 7.163 24.837 0 16 0z" fill="#0a5694"/>
+        <circle cx="16" cy="16" r="12" fill="#4da6db"/>
+      </svg>
+      <span style="
+        position: absolute;
+        top: 8px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        color: white;
+        font-weight: bold;
+        font-size: ${count > 99 ? '9px' : '11px'};
+      ">${count}</span>
+    </div>`,
+    iconSize: [width, height],
+    iconAnchor: [width / 2, height],
+    popupAnchor: [0, -height + 8],
   })
 }
 
@@ -60,27 +62,29 @@ function createClusterIcon(cluster: { getAllChildMarkers: () => L.Marker[] }) {
     return sum + count
   }, 0)
 
-  const color = getMarkerColor(totalCount)
-  const size = Math.min(50, 30 + Math.log(totalCount + 1) * 6)
+  const width = 40
+  const height = 52
 
   return L.divIcon({
     className: 'custom-marker',
-    html: `<div style="
-      width: ${size}px;
-      height: ${size}px;
-      background: ${color};
-      border: 3px solid white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: ${size > 40 ? '14px' : '12px'};
-      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-    ">${totalCount}</div>`,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+    html: `<div style="position: relative; width: ${width}px; height: ${height}px;">
+      <svg viewBox="0 0 32 44" width="${width}" height="${height}" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));">
+        <path d="M16 0C7.163 0 0 7.163 0 16c0 12 16 28 16 28s16-16 16-28C32 7.163 24.837 0 16 0z" fill="#0a5694"/>
+        <circle cx="16" cy="16" r="12" fill="#4da6db"/>
+      </svg>
+      <span style="
+        position: absolute;
+        top: 10px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        color: white;
+        font-weight: bold;
+        font-size: ${totalCount > 999 ? '9px' : totalCount > 99 ? '10px' : '12px'};
+      ">${totalCount}</span>
+    </div>`,
+    iconSize: [width, height],
+    iconAnchor: [width / 2, height],
   })
 }
 
