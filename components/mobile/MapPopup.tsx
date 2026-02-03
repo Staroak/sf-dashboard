@@ -1,16 +1,14 @@
 "use client"
 
 import { MapPin, DollarSign, TrendingUp } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { formatCurrency, type Neighborhood, type District } from '@/lib/map-config'
 
 interface MapPopupProps {
   item: Neighborhood | District
   type: 'district' | 'neighborhood'
-  onViewDeals?: () => void
 }
 
-export function MapPopup({ item, type, onViewDeals }: MapPopupProps) {
+export function MapPopup({ item, type }: MapPopupProps) {
   const name = type === 'district'
     ? (item as District).district
     : (item as Neighborhood).name
@@ -62,16 +60,6 @@ export function MapPopup({ item, type, onViewDeals }: MapPopupProps) {
           </span>
         </div>
       </div>
-
-      {type === 'neighborhood' && onViewDeals && (
-        <Button
-          size="sm"
-          onClick={onViewDeals}
-          className="w-full bg-[#0a5694] hover:bg-[#0a5694]/80 text-white text-xs h-8"
-        >
-          View Deals
-        </Button>
-      )}
     </div>
   )
 }

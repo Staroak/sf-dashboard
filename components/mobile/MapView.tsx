@@ -51,17 +51,24 @@ function createCustomIcon(count: number) {
   })
 }
 
-// Create custom cluster icon
-function createClusterIcon(cluster: { getChildCount: () => number }) {
-  const count = cluster.getChildCount()
-  const size = Math.min(50, 30 + Math.log(count + 1) * 6)
+// Create custom cluster icon - sums deal counts from all markers
+function createClusterIcon(cluster: { getAllChildMarkers: () => L.Marker[] }) {
+  // Sum the actual deal counts from all child markers
+  const markers = cluster.getAllChildMarkers()
+  const totalCount = markers.reduce((sum, marker) => {
+    const count = (marker.options as { count?: number }).count || 0
+    return sum + count
+  }, 0)
+
+  const color = getMarkerColor(totalCount)
+  const size = Math.min(50, 30 + Math.log(totalCount + 1) * 6)
 
   return L.divIcon({
     className: 'custom-marker',
     html: `<div style="
       width: ${size}px;
       height: ${size}px;
-      background: #0a5694;
+      background: ${color};
       border: 3px solid white;
       border-radius: 50%;
       display: flex;
@@ -71,7 +78,7 @@ function createClusterIcon(cluster: { getChildCount: () => number }) {
       font-weight: bold;
       font-size: ${size > 40 ? '14px' : '12px'};
       box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-    ">${count}</div>`,
+    ">${totalCount}</div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   })
@@ -158,6 +165,8 @@ export function MapView({ districts, neighborhoods, onNeighborhoodClick }: MapVi
               key={`district-${index}`}
               position={[district.lat, district.lng]}
               icon={createCustomIcon(district.count)}
+              // @ts-expect-error - custom option for cluster summing
+              count={district.count}
               eventHandlers={{
                 click: () => handleDistrictClick(district),
               }}
@@ -174,12 +183,13 @@ export function MapView({ districts, neighborhoods, onNeighborhoodClick }: MapVi
               key={`neighborhood-${index}`}
               position={[neighborhood.lat, neighborhood.lng]}
               icon={createCustomIcon(neighborhood.count)}
+              // @ts-expect-error - custom option for cluster summing
+              count={neighborhood.count}
             >
               <Popup>
                 <MapPopup
                   item={neighborhood}
                   type="neighborhood"
-                  onViewDeals={() => handleNeighborhoodClick(neighborhood)}
                 />
               </Popup>
             </Marker>
