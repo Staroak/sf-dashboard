@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { FileText, ClipboardCheck, Send, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/providers/AuthProvider'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
+import { getCached, setCache } from '@/lib/prefetch'
 import { MobileNav, MobileHeader, MetricCard, TimePeriodSelect, MiniLeaderboard, OfflineNotice, ActivityChart } from '@/components/mobile'
 
 type Period = 'today' | 'week' | 'month'
@@ -73,9 +74,19 @@ export default function MobileDashboardPage() {
   const [period, setPeriod] = useState<Period>('today')
   const [leaderboardMetric, setLeaderboardMetric] = useState<LeaderboardMetric>('applications')
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (skipCache = false) => {
     if (!isOnline) return
-    
+
+    // Check cache first for instant display
+    if (!skipCache && isLoading) {
+      const cached = getCached<DashboardData>('dashboard')
+      if (cached) {
+        setData(cached)
+        setIsLoading(false)
+        // Continue to fetch fresh data in background
+      }
+    }
+
     try {
       const response = await fetch(`/api/dashboard?t=${Date.now()}`, {
         cache: 'no-store',
@@ -83,13 +94,14 @@ export default function MobileDashboardPage() {
       if (!response.ok) throw new Error('Failed to fetch')
       const dashboardData = await response.json()
       setData(dashboardData)
+      setCache('dashboard', dashboardData)
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
     } finally {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [isOnline])
+  }, [isOnline, isLoading])
 
   useEffect(() => {
     fetchData()

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
+import { getCached, setCache } from '@/lib/prefetch'
 import { MobileNav, MobileHeader, TimePeriodSelect, OfflineNotice } from '@/components/mobile'
 import { BrokerRow } from '@/components/mobile/BrokerRow'
 import { cn } from '@/lib/utils'
@@ -64,6 +65,17 @@ export default function LeaderboardPage() {
 
   const fetchData = useCallback(async () => {
     if (!isOnline) return
+
+    // Check cache first for instant display
+    if (isLoading) {
+      const cached = getCached<DashboardData>('dashboard')
+      if (cached) {
+        setData(cached)
+        setIsLoading(false)
+        return // Use cached data, no need to refetch
+      }
+    }
+
     try {
       const response = await fetch(`/api/dashboard?t=${Date.now()}`, {
         cache: 'no-store',
@@ -71,12 +83,13 @@ export default function LeaderboardPage() {
       if (!response.ok) throw new Error('Failed to fetch')
       const dashboardData = await response.json()
       setData(dashboardData)
+      setCache('dashboard', dashboardData)
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
       setIsLoading(false)
     }
-  }, [isOnline])
+  }, [isOnline, isLoading])
 
   useEffect(() => {
     fetchData()

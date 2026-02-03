@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useMemo, Suspense } from 'react'
+import { useState, useMemo, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { startPrefetch } from '@/lib/prefetch'
 import Image from 'next/image'
 
 function LoginForm() {
@@ -14,6 +15,11 @@ function LoginForm() {
   
   const supabaseConfigured = useMemo(() => {
     return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  }, [])
+
+  // Start prefetching data immediately when login page loads
+  useEffect(() => {
+    startPrefetch()
   }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -39,6 +45,8 @@ function LoginForm() {
         return
       }
 
+      // Ensure prefetch is running before navigating
+      startPrefetch()
       router.push('/mobile/dashboard')
       router.refresh()
     } catch {

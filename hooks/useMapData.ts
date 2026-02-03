@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import type { MapDataResponse } from '@/lib/map-config'
+import { getCached, setCache } from '@/lib/prefetch'
 
 interface UseMapDataParams {
   province?: number | null
@@ -34,6 +35,17 @@ export function useMapData({
       return
     }
 
+    // Check cache first for default params (no filters)
+    const isDefaultParams = province == null && status == null
+    if (isDefaultParams) {
+      const cached = getCached<MapDataResponse>('mapData')
+      if (cached) {
+        setData(cached)
+        setIsLoading(false)
+        return
+      }
+    }
+
     setIsLoading(true)
     setError(null)
 
@@ -59,6 +71,11 @@ export function useMapData({
 
       const result: MapDataResponse = await response.json()
       setData(result)
+
+      // Cache result for default params
+      if (isDefaultParams) {
+        setCache('mapData', result)
+      }
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'))
     } finally {
