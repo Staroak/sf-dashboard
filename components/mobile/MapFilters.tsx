@@ -7,8 +7,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { PROVINCES, DEAL_STATUSES } from '@/lib/map-config'
+import { PROVINCES } from '@/lib/map-config'
 import { cn } from '@/lib/utils'
+
+// Simplified status options for mobile
+// -1 = Funded (combines Funded status 6 + Complete status 7)
+const MOBILE_STATUSES = [
+  { value: 0, label: 'Lead' },
+  { value: -1, label: 'Funded' }, // Special value to combine Funded + Complete
+]
 
 interface MapFiltersProps {
   province: number | null
@@ -71,7 +78,7 @@ export function MapFilters({
           <SelectItem value="all" className="text-white text-xs">
             All Statuses
           </SelectItem>
-          {DEAL_STATUSES.map((s) => (
+          {MOBILE_STATUSES.map((s) => (
             <SelectItem
               key={s.value}
               value={s.value.toString()}

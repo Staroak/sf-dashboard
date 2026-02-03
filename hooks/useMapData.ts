@@ -20,6 +20,40 @@ interface UseMapDataResult {
 const API_URL = process.env.NEXT_PUBLIC_MAP_API_URL || 'https://www.bpportal.ca/api/mobile/map-data'
 const API_KEY = process.env.NEXT_PUBLIC_MAP_API_KEY || ''
 
+// Special status value for combined Funded + Complete
+const FUNDED_COMBINED = -1
+const STATUS_FUNDED = 6
+const STATUS_COMPLETE = 7
+
+// Helper to fetch a single status
+async function fetchSingleStatus(province: number | null | undefined, status: number | null | undefined): Promise<MapDataResponse> {
+  const queryParams = new URLSearchParams()
+  if (province != null) queryParams.set('province', String(province))
+  if (status != null) queryParams.set('status', String(status))
+  queryParams.set('t', String(Date.now()))
+
+  const url = `${API_URL}?${queryParams.toString()}`
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${API_KEY}` },
+    cache: 'no-store',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch map data: ${response.status}`)
+  }
+
+  return response.json()
+}
+
+// Merge two MapDataResponse objects
+function mergeMapData(a: MapDataResponse, b: MapDataResponse): MapDataResponse {
+  return {
+    districts: [...a.districts, ...b.districts],
+    neighborhoods: [...a.neighborhoods, ...b.neighborhoods],
+    totalDeals: a.totalDeals + b.totalDeals,
+  }
+}
+
 export function useMapData({
   province,
   status,
@@ -50,26 +84,19 @@ export function useMapData({
     setError(null)
 
     try {
-      const queryParams = new URLSearchParams()
-      if (province != null) queryParams.set('province', String(province))
-      if (status != null) queryParams.set('status', String(status))
-      // Add cache-busting timestamp
-      queryParams.set('t', String(Date.now()))
+      let result: MapDataResponse
 
-      const url = `${API_URL}?${queryParams.toString()}`
-
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-        },
-        cache: 'no-store',
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch map data: ${response.status}`)
+      // Handle combined Funded status (-1) by fetching both Funded (6) and Complete (7)
+      if (status === FUNDED_COMBINED) {
+        const [fundedData, completeData] = await Promise.all([
+          fetchSingleStatus(province, STATUS_FUNDED),
+          fetchSingleStatus(province, STATUS_COMPLETE),
+        ])
+        result = mergeMapData(fundedData, completeData)
+      } else {
+        result = await fetchSingleStatus(province, status)
       }
 
-      const result: MapDataResponse = await response.json()
       setData(result)
 
       // Cache result for default params
