@@ -5,44 +5,47 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/AuthProvider'
 
 export function AppRefreshHandler() {
-  const lastHiddenTime = useRef<number | null>(null)
   const { signOut } = useAuth()
   const router = useRouter()
-  
+  const signOutTimerRef = useRef<NodeJS.Timeout | null>(null)
+
   useEffect(() => {
-    // Thresholds
-    const REFRESH_THRESHOLD_MS = 30 * 1000      // 30 seconds - just reload
-    const RELOGIN_THRESHOLD_MS = 10 * 60 * 1000 // 10 minutes - force re-login
-    
+    const GRACE_PERIOD_MS = 20 * 1000 // 20 seconds
+
     const handleVisibilityChange = async () => {
       if (document.hidden) {
-        // App going to background - record the time
-        lastHiddenTime.current = Date.now()
-      } else {
-        // App coming back to foreground
-        if (lastHiddenTime.current) {
-          const timeInBackground = Date.now() - lastHiddenTime.current
-          
-          if (timeInBackground >= RELOGIN_THRESHOLD_MS) {
-            // Been away for 10+ minutes - sign out and redirect to login
+        // App going to background - start grace period timer
+        signOutTimerRef.current = setTimeout(async () => {
+          // Only sign out if still hidden after grace period
+          if (document.hidden) {
             await signOut()
-            router.push('/mobile/login')
-          } else if (timeInBackground >= REFRESH_THRESHOLD_MS) {
-            // Been away for 30s+ but less than 10 min - just reload
-            window.location.reload()
           }
-          // Less than 30 seconds - do nothing
+        }, GRACE_PERIOD_MS)
+      } else {
+        // App coming back - cancel the sign out timer if it exists
+        if (signOutTimerRef.current) {
+          clearTimeout(signOutTimerRef.current)
+          signOutTimerRef.current = null
         }
-        lastHiddenTime.current = null
       }
     }
-    
+
+    // Also handle page unload for when user navigates away or closes tab
+    const handleBeforeUnload = () => {
+      signOut()
+    }
+
     document.addEventListener('visibilitychange', handleVisibilityChange)
-    
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      if (signOutTimerRef.current) {
+        clearTimeout(signOutTimerRef.current)
+      }
     }
   }, [signOut, router])
-  
+
   return null
 }
