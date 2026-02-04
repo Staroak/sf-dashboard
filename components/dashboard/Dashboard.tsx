@@ -97,7 +97,7 @@ const PAGE_DURATIONS: Record<PageType, number> = {
   applications: 11000,
   appraisals: 11000,
   submissions: 11000,
-  funded: 15000,     // 15 seconds for funded
+  funded: 10000,     // 10 seconds for funded
   teamleads: 25000,  // 25 seconds for team leads
   weeklyteam: 25000, // 25 seconds for weekly team
   summary: 40000, // 40 secs for summary page
@@ -436,10 +436,18 @@ export function Dashboard() {
           />
         );
       case "funded":
+        // Use dailyBrokers (all 33) but get closedWon from monthly data
+        const fundedBrokers = dailyBrokers.map(broker => {
+          const monthlyBroker = monthlyBrokers.find(m => m.userId === broker.userId);
+          return {
+            ...broker,
+            closedWon: monthlyBroker?.closedWon ?? 0,
+          };
+        });
         return (
           <FundedPage
             monthlyFunded={data?.monthly.closedWon || 0}
-            brokers={monthlyBrokers}
+            brokers={fundedBrokers}
           />
         );
       case "teamleads":
