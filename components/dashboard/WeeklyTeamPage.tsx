@@ -9,6 +9,7 @@ interface BrokerStats {
   userId: string;
   userName: string;
   contactsMade: number;
+  closedWon: number;
   applicationsTaken: number;
   appraisalsOrdered: number;
   submissions: number;

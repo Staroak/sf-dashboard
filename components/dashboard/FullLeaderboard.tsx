@@ -7,12 +7,13 @@ interface BrokerStats {
   userId: string;
   userName: string;
   contactsMade: number;
+  closedWon: number;
   applicationsTaken: number;
   appraisalsOrdered: number;
   submissions: number;
 }
 
-type MetricKey = "applicationsTaken" | "appraisalsOrdered" | "submissions" | "contactsMade";
+type MetricKey = "applicationsTaken" | "appraisalsOrdered" | "submissions" | "contactsMade" | "closedWon";
 
 interface FullLeaderboardProps {
   brokers: BrokerStats[];

@@ -9,6 +9,7 @@ import { SubmissionsPage } from "./SubmissionsPage";
 import { TeamLeadsPage } from "./TeamLeadsPage";
 import { WeeklyTeamPage } from "./WeeklyTeamPage";
 import { SummaryPage } from "./SummaryPage";
+import { FundedPage } from "./FundedPage";
 import { ThemeToggle } from "./ThemeToggle";
 import { GoalCelebration, BrokerCelebration } from "./GoalCelebration";
 
@@ -50,6 +51,7 @@ interface BrokerStats {
   userId: string;
   userName: string;
   contactsMade: number;
+  closedWon: number;
   applicationsTaken: number;
   appraisalsOrdered: number;
   submissions: number;
@@ -57,6 +59,7 @@ interface BrokerStats {
 
 interface PeriodData {
   contactsMade: number;
+  closedWon: number;
   applicationsTaken: number;
   appraisalsOrdered: number;
   submissions: number;
@@ -76,13 +79,14 @@ interface DashboardData {
 
 const REFRESH_INTERVAL = 10000; // 10 seconds
 
-const PAGES = ["applications", "appraisals", "submissions", "teamleads", "weeklyteam", "summary"] as const;
+const PAGES = ["applications", "appraisals", "submissions", "funded", "teamleads", "weeklyteam", "summary"] as const;
 type PageType = typeof PAGES[number];
 
 const PAGE_LABELS: Record<PageType, string> = {
   applications: "Applications",
   appraisals: "Appraisals",
   submissions: "Submissions",
+  funded: "Funded",
   teamleads: "Team Leads",
   weeklyteam: "Weekly Team",
   summary: "Summary",
@@ -93,6 +97,7 @@ const PAGE_DURATIONS: Record<PageType, number> = {
   applications: 11000,
   appraisals: 11000,
   submissions: 11000,
+  funded: 15000,     // 15 seconds for funded
   teamleads: 25000,  // 25 seconds for team leads
   weeklyteam: 25000, // 25 seconds for weekly team
   summary: 40000, // 40 secs for summary page
@@ -428,6 +433,13 @@ export function Dashboard() {
             yesterdayContacts={data?.yesterday?.contactsMade}
             yesterdaySubmissions={data?.yesterday?.submissions}
             yesterdayBrokers={yesterdayBrokers}
+          />
+        );
+      case "funded":
+        return (
+          <FundedPage
+            monthlyFunded={data?.monthly.closedWon || 0}
+            brokers={monthlyBrokers}
           />
         );
       case "teamleads":
