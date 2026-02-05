@@ -14,7 +14,7 @@ type LeaderboardMetric = 'applications' | 'appraisals' | 'submissions'
 const VALID_BROKERS = [
   'Alice Nabi', 'Alika Walia', 'Baldip Nijjar', 'Bowie Nan', 'Brandon Viaje-Roque',
   'Charlene Smith', 'Doyle Minhas', 'Garry Singh', 'Gaurav Dadral', 'Gurjit Sandhu',
-  'Gurpreet Kaur', 'Harick Brar', 'Jaslene Perhar', 'Jennifer Souvanvong', 'Karny Mehat',
+  'Gurpreet Kaur', 'Harick Brar', 'Harry Dhunna', 'Jaslene Perhar', 'Jennifer Souvanvong', 'Karny Mehat',
   'Lesly Camaclang', 'Megan Robertson', 'Mindy Basran', 'Natalie Pacheco', 'Nav Cheema', 'Olaf Durkowski',
   'Parmeet Singh', 'Rahul Narula', 'Ranier Manding', 'Renzo Mesia', 'Saihaj Cheema',
   'Salil Singla', 'Savraj Cheema', 'Serg Martires', 'Shaneen Mohammed', 'Shiela Jamero', 'Stephanie Viaje',
