@@ -64,27 +64,29 @@ export const TEAMS: TeamConfig[] = [
     displayName: "Team Alika",              // <-- Change this to customize display name
     leaderName: "Alika Walia",
     members: [
-      "Gurjit Sandhu",
-      "Jaslen Perhar",
-    ],
-  },
-  {
-    displayName: "Team Brendan",            // <-- Change this to customize display name
-    leaderName: "Brendan Wilson",
-    members: [
       "Doyle Minhas",
-      "Gaurav Dadral",
+      "Gurjit Sandhu",
+      "Jaslene Perhar",
     ],
   },
   {
     displayName: "Team Sunny",
     leaderName: "Sunny Dhillon",
     members: [
+      "Gaurav Dadral",
       "Olaf Durkowski",
       "Karny Mehat",
       "Salil Singla"
     ]
-  }
+  },
+  {
+    displayName: "Team Lesly",
+    leaderName: "Lesly Camaclang",
+    members: [
+      "Mindy Basran",
+      "Caitlyn Chretien",
+    ]
+  },
 ];
 
 // Helper to get all team members INCLUDING the leader

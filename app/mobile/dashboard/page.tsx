@@ -12,7 +12,7 @@ type LeaderboardMetric = 'applications' | 'appraisals' | 'submissions'
 
 // Hardcoded list of valid broker names (from Salesforce) - same as web dashboard
 const VALID_BROKERS = [
-  'Alice Nabi', 'Alika Walia', 'Baldip Nijjar', 'Bowie Nan', 'Brandon Viaje-Roque', 'Brendan Wilson',
+  'Alice Nabi', 'Alika Walia', 'Baldip Nijjar', 'Bowie Nan', 'Brandon Viaje-Roque',
   'Charlene Smith', 'Doyle Minhas', 'Garry Singh', 'Gaurav Dadral', 'Gurjit Sandhu',
   'Gurpreet Kaur', 'Harick Brar', 'Jaslene Perhar', 'Jennifer Souvanvong', 'Karny Mehat',
   'Lesly Camaclang', 'Megan Robertson', 'Mindy Basran', 'Natalie Pacheco', 'Nav Cheema', 'Olaf Durkowski',
