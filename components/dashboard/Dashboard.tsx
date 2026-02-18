@@ -80,7 +80,7 @@ interface DashboardData {
 
 const REFRESH_INTERVAL = 10000; // 10 seconds
 
-const PAGES = ["applications", "appraisals", "submissions", "funded", "teamleads", "weeklyteam", "summary", "quotes"] as const;
+const PAGES = ["applications", "appraisals", "submissions", "funded", "teamleads", "summary", "quotes"] as const;
 type PageType = typeof PAGES[number];
 
 const PAGE_LABELS: Record<PageType, string> = {
