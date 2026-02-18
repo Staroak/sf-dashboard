@@ -94,12 +94,12 @@ export function WeeklyTeamPage({ brokers }: WeeklyTeamPageProps) {
   };
 
   return (
-    <div className="h-full flex flex-col gap-3 p-4 overflow-hidden">
+    <div className="h-full flex flex-col gap-3 px-24 py-4 overflow-hidden">
       {/* Header Row - Title + Column Headers */}
       <div className="flex-shrink-0 flex items-center px-6">
         {/* Left side: Rank placeholder + Title */}
         <div className="w-16 flex-shrink-0" /> {/* Match rank column width */}
-        <div className="flex items-center gap-4 flex-1">
+        <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
             <Users className="h-10 w-10 text-blue-500" />
             <Calendar className="h-8 w-8 text-blue-400" />
@@ -109,20 +109,21 @@ export function WeeklyTeamPage({ brokers }: WeeklyTeamPageProps) {
             <p className="text-lg text-muted-foreground">This Week's Rankings</p>
           </div>
         </div>
+        <div className="flex-1" />
 
         {/* Right side: Column Headers - must match data column widths exactly */}
         <div className="flex items-center flex-shrink-0 gap-8">
-          <div className="w-[180px] text-center">
+          <div className="w-[240px] text-center">
             <span className="text-xl font-bold text-green-500 uppercase tracking-wider">
               Apps
             </span>
           </div>
-          <div className="w-[180px] text-center">
+          <div className="w-[240px] text-center">
             <span className="text-xl font-bold text-purple-500 uppercase tracking-wider">
               Appraisals
             </span>
           </div>
-          <div className="w-[180px] text-center">
+          <div className="w-[240px] text-center">
             <span className="text-xl font-bold text-orange-500 uppercase tracking-wider">
               Submissions
             </span>
@@ -151,7 +152,7 @@ export function WeeklyTeamPage({ brokers }: WeeklyTeamPageProps) {
               </div>
 
               {/* Team Lead Name */}
-              <div className="flex-1 min-w-0 flex items-center">
+              <div className="min-w-0 flex items-center flex-shrink-0">
                 <span
                   className={cn("font-bold truncate", config.nameColor)}
                   style={{ fontSize: "clamp(1.75rem, 3.5vw, 3rem)" }}
@@ -160,10 +161,13 @@ export function WeeklyTeamPage({ brokers }: WeeklyTeamPageProps) {
                 </span>
               </div>
 
+              {/* Dotted leader line */}
+              <div className="flex-1 mx-4 border-b-2 border-dotted border-white/15 self-end mb-4" />
+
               {/* Stats - aligned with header columns */}
               <div className="flex items-center flex-shrink-0 gap-8">
                 {/* Applications */}
-                <div className="w-[180px] flex items-center justify-center">
+                <div className="w-[240px] flex items-center justify-center">
                   <span
                     className="font-black text-green-500 tabular-nums"
                     style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)" }}
@@ -173,7 +177,7 @@ export function WeeklyTeamPage({ brokers }: WeeklyTeamPageProps) {
                 </div>
 
                 {/* Appraisals */}
-                <div className="w-[180px] flex items-center justify-center">
+                <div className="w-[240px] flex items-center justify-center">
                   <span
                     className="font-black text-purple-500 tabular-nums"
                     style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)" }}
@@ -183,7 +187,7 @@ export function WeeklyTeamPage({ brokers }: WeeklyTeamPageProps) {
                 </div>
 
                 {/* Submissions */}
-                <div className="w-[180px] flex items-center justify-center">
+                <div className="w-[240px] flex items-center justify-center">
                   <span
                     className="font-black text-orange-500 tabular-nums"
                     style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)" }}

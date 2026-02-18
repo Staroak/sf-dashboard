@@ -2,7 +2,6 @@
 
 import { StatsSection } from "./StatsSection";
 import { RotatingLeaderboard } from "./RotatingLeaderboard";
-import { QuoteSidebar } from "./QuoteSidebar";
 import { BluePearl } from "./BluePearl";
 
 interface BrokerStats {
@@ -40,9 +39,9 @@ export function SummaryPage({ daily, monthly, yesterday, brokers }: SummaryPageP
     <div className="h-full flex flex-col p-3 overflow-hidden">
       <div className="flex-1 grid grid-cols-12 gap-3 min-h-0">
         {/* Main Stats Area - 9 columns */}
-        <div className="col-span-12 lg:col-span-9 flex flex-col gap-3 min-h-0">
-          {/* Daily Stats - compact mode */}
-          <div className="flex-shrink-0">
+        <div className="col-span-12 lg:col-span-9 grid grid-cols-2 gap-3 min-h-0">
+          {/* Left: Today + Monthly Performance side by side (2x4 grid) */}
+          <div className="grid grid-cols-2 gap-3 min-h-0">
             <StatsSection
               title="Today's Performance"
               period="Daily"
@@ -55,11 +54,8 @@ export function SummaryPage({ daily, monthly, yesterday, brokers }: SummaryPageP
               previousAppraisalsOrdered={yesterday?.appraisalsOrdered}
               previousSubmissions={yesterday?.submissions}
               compact
+              vertical
             />
-          </div>
-
-          {/* Monthly Stats - compact mode */}
-          <div className="flex-shrink-0">
             <StatsSection
               title="Monthly Performance"
               period="Monthly"
@@ -68,20 +64,15 @@ export function SummaryPage({ daily, monthly, yesterday, brokers }: SummaryPageP
               appraisalsOrdered={monthly.appraisalsOrdered}
               submissions={monthly.submissions}
               compact
+              vertical
             />
           </div>
 
-          {/* Bottom Section: Leaderboard and Quotes - equal width */}
-          <div className="flex-1 grid grid-cols-2 gap-3 min-h-0">
-            {/* Rotating Leaderboard */}
-            <RotatingLeaderboard
-              brokers={brokers}
-              rotationInterval={10000}
-            />
-
-            {/* Rotating Quotes and Tips */}
-            <QuoteSidebar />
-          </div>
+          {/* Right: Rotating Leaderboard */}
+          <RotatingLeaderboard
+            brokers={brokers}
+            rotationInterval={10000}
+          />
         </div>
 
         {/* Sidebar - 3 columns with 3 Daily Goal Pearls */}

@@ -15,6 +15,7 @@ interface MetricCardProps {
   color?: "blue" | "green" | "purple" | "orange" | "cyan" | "pink";
   size?: "default" | "large";
   compact?: boolean; // Hides subtitle and uses larger, inline display
+  square?: boolean; // Square card with centered large number and icon
 }
 
 const colorStyles = {
@@ -71,8 +72,40 @@ export function MetricCard({
   color = "blue",
   size = "default",
   compact = false,
+  square = false,
 }: MetricCardProps) {
   const styles = colorStyles[color];
+
+  // Square mode: Large centered number + icon, fills available space
+  if (square) {
+    return (
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-xl border bg-card/80 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0 p-3",
+          styles.border
+        )}
+      >
+        {/* Background gradient */}
+        <div className={cn(
+          "absolute top-0 right-0 w-32 h-32 opacity-10 rounded-full blur-2xl",
+          `bg-gradient-to-br ${styles.gradient}`
+        )} />
+
+        <div className="relative flex flex-col items-center gap-1">
+          <div className={cn(
+            "flex items-center justify-center rounded-xl p-3",
+            styles.iconBg
+          )}>
+            <Icon className="h-8 w-8 text-white" />
+          </div>
+          <h3 className="font-bold text-4xl tracking-tight text-foreground">
+            {value.toLocaleString()}
+          </h3>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+        </div>
+      </div>
+    );
+  }
 
   // Compact mode: Large number + title inline, no subtitle
   if (compact) {

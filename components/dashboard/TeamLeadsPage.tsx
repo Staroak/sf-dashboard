@@ -103,29 +103,30 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps)
   };
 
   return (
-    <div className="h-full flex flex-col gap-3 p-4 overflow-hidden">
+    <div className="h-full flex flex-col gap-3 px-24 py-4 overflow-hidden">
       {/* Header Row - Title + Column Headers */}
       <div className="flex-shrink-0 flex items-center px-6">
         {/* Left side: Rank placeholder + Title */}
         <div className="w-16 flex-shrink-0" /> {/* Match rank column width */}
-        <div className="flex items-center gap-4 flex-1">
+        <div className="flex items-center gap-4">
           <Users className="h-10 w-10 text-blue-500" />
           <h1 className="font-black text-4xl text-foreground">Team Performance</h1>
         </div>
+        <div className="flex-1" />
 
         {/* Right side: Column Headers - must match data column widths exactly */}
         <div className="flex items-center flex-shrink-0 gap-8">
-          <div className="w-[180px] text-center">
+          <div className="w-[240px] text-center">
             <span className="text-xl font-bold text-green-500 uppercase tracking-wider">
               Apps
             </span>
           </div>
-          <div className="w-[180px] text-center">
+          <div className="w-[240px] text-center">
             <span className="text-xl font-bold text-purple-500 uppercase tracking-wider">
               Appraisals
             </span>
           </div>
-          <div className="w-[180px] text-center">
+          <div className="w-[240px] text-center">
             <span className="text-xl font-bold text-orange-500 uppercase tracking-wider">
               Submissions
             </span>
@@ -175,7 +176,7 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps)
               </div>
 
               {/* Team Lead Name */}
-              <div className="flex-1 min-w-0 flex items-center">
+              <div className="min-w-0 flex items-center flex-shrink-0">
                 <span
                   className={cn("font-bold truncate", config.nameColor)}
                   style={{ fontSize: "clamp(1.75rem, 3.5vw, 3rem)" }}
@@ -184,10 +185,13 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps)
                 </span>
               </div>
 
+              {/* Dotted leader line */}
+              <div className="flex-1 mx-4 border-b-2 border-dotted border-white/15 self-end mb-4" />
+
               {/* Stats - aligned with header columns */}
               <div className="flex items-center flex-shrink-0 gap-8">
                 {/* Applications */}
-                <div className="w-[180px] flex items-center justify-center">
+                <div className="w-[240px] flex items-center justify-center">
                   <span
                     className="font-black text-green-500 tabular-nums"
                     style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)" }}
@@ -198,7 +202,7 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps)
                 </div>
 
                 {/* Appraisals */}
-                <div className="w-[180px] flex items-center justify-center">
+                <div className="w-[240px] flex items-center justify-center">
                   <span
                     className="font-black text-purple-500 tabular-nums"
                     style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)" }}
@@ -209,7 +213,7 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps)
                 </div>
 
                 {/* Submissions */}
-                <div className="w-[180px] flex items-center justify-center">
+                <div className="w-[240px] flex items-center justify-center">
                   <span
                     className="font-black text-orange-500 tabular-nums"
                     style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)" }}

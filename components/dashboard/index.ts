@@ -3,4 +3,5 @@ export { BluePearl } from './BluePearl';
 export { Leaderboard } from './Leaderboard';
 export { MetricCard } from './MetricCard';
 export { QuoteSidebar } from './QuoteSidebar';
+export { QuotesPage } from './QuotesPage';
 export { StatsSection } from './StatsSection';

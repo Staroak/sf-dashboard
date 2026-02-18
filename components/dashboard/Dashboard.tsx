@@ -10,6 +10,7 @@ import { TeamLeadsPage } from "./TeamLeadsPage";
 import { WeeklyTeamPage } from "./WeeklyTeamPage";
 import { SummaryPage } from "./SummaryPage";
 import { FundedPage } from "./FundedPage";
+import { QuotesPage } from "./QuotesPage";
 import { ThemeToggle } from "./ThemeToggle";
 import { GoalCelebration, BrokerCelebration } from "./GoalCelebration";
 
@@ -79,7 +80,7 @@ interface DashboardData {
 
 const REFRESH_INTERVAL = 10000; // 10 seconds
 
-const PAGES = ["applications", "appraisals", "submissions", "funded", "teamleads", "weeklyteam", "summary"] as const;
+const PAGES = ["applications", "appraisals", "submissions", "funded", "teamleads", "weeklyteam", "summary", "quotes"] as const;
 type PageType = typeof PAGES[number];
 
 const PAGE_LABELS: Record<PageType, string> = {
@@ -90,6 +91,7 @@ const PAGE_LABELS: Record<PageType, string> = {
   teamleads: "Team Leads",
   weeklyteam: "Weekly Team",
   summary: "Summary",
+  quotes: "Quotes",
 };
 
 // Page-specific durations in milliseconds
@@ -101,6 +103,7 @@ const PAGE_DURATIONS: Record<PageType, number> = {
   teamleads: 25000,  // 25 seconds for team leads
   weeklyteam: 25000, // 25 seconds for weekly team
   summary: 40000, // 40 secs for summary page
+  quotes: 20000,
 };
 
 export function Dashboard() {
@@ -454,32 +457,34 @@ export function Dashboard() {
         return <TeamLeadsPage brokers={dailyBrokers} yesterdayBrokers={yesterdayBrokers} />;
       case "weeklyteam":
         return <WeeklyTeamPage brokers={weeklyBrokers} />;
-      case "summary":
-        return (
-          <SummaryPage
-            daily={{
-              contactsMade: data?.daily.contactsMade || 0,
-              applicationsTaken: data?.daily.applicationsTaken || 0,
-              appraisalsOrdered: data?.daily.appraisalsOrdered || 0,
-              submissions: data?.daily.submissions || 0,
-            }}
-            monthly={{
-              contactsMade: data?.monthly.contactsMade || 0,
-              applicationsTaken: data?.monthly.applicationsTaken || 0,
-              appraisalsOrdered: data?.monthly.appraisalsOrdered || 0,
-              submissions: data?.monthly.submissions || 0,
-            }}
-            yesterday={{
-              contactsMade: data?.yesterday?.contactsMade || 0,
-              applicationsTaken: data?.yesterday?.applicationsTaken || 0,
-              appraisalsOrdered: data?.yesterday?.appraisalsOrdered || 0,
-              submissions: data?.yesterday?.submissions || 0,
-            }}
-            brokers={monthlyBrokers}
-          />
-        );
-    }
-  };
+       case "summary":
+         return (
+           <SummaryPage
+             daily={{
+               contactsMade: data?.daily.contactsMade || 0,
+               applicationsTaken: data?.daily.applicationsTaken || 0,
+               appraisalsOrdered: data?.daily.appraisalsOrdered || 0,
+               submissions: data?.daily.submissions || 0,
+             }}
+             monthly={{
+               contactsMade: data?.monthly.contactsMade || 0,
+               applicationsTaken: data?.monthly.applicationsTaken || 0,
+               appraisalsOrdered: data?.monthly.appraisalsOrdered || 0,
+               submissions: data?.monthly.submissions || 0,
+             }}
+             yesterday={{
+               contactsMade: data?.yesterday?.contactsMade || 0,
+               applicationsTaken: data?.yesterday?.applicationsTaken || 0,
+               appraisalsOrdered: data?.yesterday?.appraisalsOrdered || 0,
+               submissions: data?.yesterday?.submissions || 0,
+             }}
+             brokers={monthlyBrokers}
+           />
+         );
+       case "quotes":
+         return <QuotesPage />;
+     }
+   };
 
   return (
     <div className="h-screen max-h-screen bg-background text-foreground flex flex-col overflow-hidden">

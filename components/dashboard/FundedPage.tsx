@@ -30,7 +30,7 @@ export function FundedPage({
         <div className="flex items-center justify-between flex-1">
           <SimpleStat value={monthlyFunded} label="Funded This Month" color="purple" />
         </div>
-        <BluePearl current={monthlyFunded} goal={20} size="horizontal" />
+        <BluePearl current={monthlyFunded} goal={100} size="horizontal" />
       </div>
 
       {/* Monthly Leaderboard - ranked by closedWon */}
@@ -38,8 +38,8 @@ export function FundedPage({
         <FullLeaderboard
           brokers={brokers}
           metric="closedWon"
-          title="Monthly Funded Deals"
-          dailyGoal={20}
+          title="Weekly Funded Deals"
+          dailyGoal={100}
           goalCurrent={monthlyFunded}
           goalLabel="Monthly Goal"
         />
