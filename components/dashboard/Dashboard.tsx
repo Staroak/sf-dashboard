@@ -89,7 +89,7 @@ const PAGE_LABELS: Record<PageType, string> = {
   submissions: "Submissions",
   funded: "Funded",
   teamleads: "Team Leads",
-  weeklyteam: "Weekly Team",
+  // weeklyteam: "Weekly Team",  // hidden - add back to PAGES to re-enable
   summary: "Summary",
   quotes: "Quotes",
 };
@@ -101,7 +101,7 @@ const PAGE_DURATIONS: Record<PageType, number> = {
   submissions: 11000,
   funded: 10000,     // 10 seconds for funded
   teamleads: 25000,  // 25 seconds for team leads
-  weeklyteam: 25000, // 25 seconds for weekly team
+  // weeklyteam: 25000, // 25 seconds for weekly team - hidden
   summary: 40000, // 40 secs for summary page
   quotes: 20000,
 };
