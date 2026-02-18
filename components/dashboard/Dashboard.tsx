@@ -455,8 +455,8 @@ export function Dashboard() {
         );
       case "teamleads":
         return <TeamLeadsPage brokers={dailyBrokers} yesterdayBrokers={yesterdayBrokers} />;
-      case "weeklyteam":
-        return <WeeklyTeamPage brokers={weeklyBrokers} />;
+      // case "weeklyteam":
+      //   return <WeeklyTeamPage brokers={weeklyBrokers} />;
        case "summary":
          return (
            <SummaryPage
