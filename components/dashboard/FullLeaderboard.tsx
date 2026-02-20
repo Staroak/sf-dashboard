@@ -90,9 +90,9 @@ const VALID_BROKERS = [
   'Alice Nabi', 'Alika Walia', 'Baldip Nijjar', 'Bowie Nan', 'Brandon Viaje-Roque',
   'Caitlyn Chretien', 'Charlene Smith', 'Doyle Minhas', 'Garry Singh', 'Gaurav Dadral', 'Gurjit Sandhu',
   'Gurpreet Kaur', 'Harick Brar', 'Harry Dhunna', 'Jaslene Perhar', 'Jennifer Souvanvong', 'Karny Mehat',
-  'Lesly Camaclang', 'Mindy Basran', 'Natalie Pacheco', 'Nav Cheema', 'Olaf Durkowski',
+  'Lesly Camaclang', 'Madhur Kapoor', 'Mindy Basran', 'Natalie Pacheco', 'Nav Cheema', 'Olaf Durkowski',
   'Parmeet Singh', 'Rahul Narula', 'Ranier Manding', 'Renzo Mesia', 'Saihaj Cheema',
-  'Salil Singla', 'Savraj Cheema', 'Serg Martires', 'Shiela Jamero', 'Stephanie Viaje',
+  'Salil Singla', 'Savraj Cheema', 'Serg Martires', 'Shaad bakhtyar', 'Shiela Jamero', 'Stephanie Viaje',
   'Sunny Dhillon'
 ];
 
