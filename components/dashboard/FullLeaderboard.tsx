@@ -152,7 +152,7 @@ export function FullLeaderboard({
     { brokers: sortedBrokers.slice(0, 7), startRank: 1, tier: 0 },
     { brokers: sortedBrokers.slice(7, 15), startRank: 8, tier: 1 },
     { brokers: sortedBrokers.slice(15, 24), startRank: 16, tier: 2 },
-    { brokers: sortedBrokers.slice(24, 33), startRank: 25, tier: 3 },
+    { brokers: sortedBrokers.slice(24, 34), startRank: 25, tier: 3 },
   ];
 
   return (
