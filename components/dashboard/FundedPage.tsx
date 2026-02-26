@@ -38,7 +38,7 @@ export function FundedPage({
         <FullLeaderboard
           brokers={brokers}
           metric="closedWon"
-          title="Weekly Funded Deals"
+          title="Monthly Funded Deals"
           dailyGoal={100}
           goalCurrent={monthlyFunded}
           goalLabel="Monthly Goal"
