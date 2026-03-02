@@ -85,6 +85,7 @@ export const TEAMS: TeamConfig[] = [
     members: [
       "Mindy Basran",
       "Caitlyn Chretien",
+      "Shaad Bakhtyar"
     ]
   },
 ];
