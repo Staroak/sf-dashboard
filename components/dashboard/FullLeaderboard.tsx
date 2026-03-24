@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { isRealBroker } from "@/lib/brokers";
 import { Trophy, Medal, Award, Star, TrendingUp, TrendingDown } from "lucide-react";
 
 interface BrokerStats {
@@ -85,22 +86,6 @@ const tier1Icons = [
   { icon: Star, color: "text-blue-200" },
 ];
 
-// List of valid broker names (from Salesforce)
-const VALID_BROKERS = [
-  'Alice Nabi', 'Alika Walia', 'Baldip Nijjar', 'Bowie Nan', 'Brandon Viaje-Roque',
-  'Caitlyn Chretien', 'Charlene Smith', 'Doyle Minhas', 'Garry Singh', 'Gaurav Dadral', 'Gurjit Sandhu',
-  'Gurpreet Kaur', 'Harick Brar', 'Harry Dhunna', 'Jennifer Souvanvong', 'Karny Mehat',
-  'Lesly Camaclang', 'Madhur Kapoor', 'Mindy Basran', 'Natalie Pacheco', 'Nav Cheema', 'Olaf Durkowski',
-  'Rahul Narula', 'Ranier Manding', 'Renzo Mesia', 'Saihaj Cheema',
-  'Salil Singla', 'Savraj Cheema', 'Serg Martires', 'Shaad bakhtyar', 'Shiela Jamero', 'Stephanie Viaje',
-  'Sunny Dhillon'
-];
-
-// Filter to only include valid brokers
-const isRealBroker = (name: string): boolean => {
-  if (!name || name === 'Unknown') return false;
-  return VALID_BROKERS.includes(name);
-};
 
 export function FullLeaderboard({
   brokers,

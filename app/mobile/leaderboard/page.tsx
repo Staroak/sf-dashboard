@@ -6,26 +6,10 @@ import { getCached, setCache } from '@/lib/prefetch'
 import { MobileNav, MobileHeader, TimePeriodSelect, OfflineNotice } from '@/components/mobile'
 import { BrokerRow } from '@/components/mobile/BrokerRow'
 import { cn } from '@/lib/utils'
+import { isRealBroker } from '@/lib/brokers'
 
 type Period = 'today' | 'week' | 'month'
 type Metric = 'applications' | 'appraisals' | 'submissions' | 'contacts'
-
-// Hardcoded list of valid broker names (from Salesforce) - same as web dashboard
-const VALID_BROKERS = [
-  'Alice Nabi', 'Alika Walia', 'Baldip Nijjar', 'Bowie Nan', 'Brandon Viaje-Roque',
-  'Charlene Smith', 'Doyle Minhas', 'Garry Singh', 'Gaurav Dadral', 'Gurjit Sandhu',
-  'Gurpreet Kaur', 'Harick Brar', 'Harry Dhunna', 'Jennifer Souvanvong', 'Karny Mehat',
-  'Lesly Camaclang', 'Madhur Kapoor', 'Megan Robertson', 'Mindy Basran', 'Natalie Pacheco', 'Nav Cheema', 'Olaf Durkowski',
-   'Rahul Narula', 'Ranier Manding', 'Renzo Mesia', 'Saihaj Cheema',
-  'Salil Singla', 'Savraj Cheema', 'Serg Martires', 'Shaneen Mohammed', 'Shaad bakhtyar','Shiela Jamero', 'Stephanie Viaje',
-  'Sunny Dhillon'
-]
-
-// Check if broker name is in the valid list
-const isRealBroker = (name: string): boolean => {
-  if (!name || name === 'Unknown') return false
-  return VALID_BROKERS.includes(name)
-}
 
 interface BrokerStats {
   userId: string

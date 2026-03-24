@@ -546,7 +546,7 @@ export function BrokerCelebration({ show, brokerName, metricType, value, goal, o
 
         {/* Achievement text */}
         <h2 className="text-5xl md:text-6xl font-bold text-white mb-8 animate-badge-pop text-center">
-          HIT THEIR DAILY GOAL!
+          {value > goal ? "CRUSHED THEIR DAILY GOAL!" : "HIT THEIR DAILY GOAL!"}
         </h2>
 
         {/* Metric badge */}
@@ -575,7 +575,9 @@ export function BrokerCelebration({ show, brokerName, metricType, value, goal, o
 
         {/* Celebration message */}
         <p className="text-2xl md:text-3xl text-white/80 mt-12 font-medium animate-fade-in-up text-center">
-          Way to go, {firstName}! Keep up the amazing work! 🔥
+          {value > goal
+            ? `${firstName} is on fire! ${value} and counting! 🔥`
+            : `Way to go, ${firstName}! Keep up the amazing work! 🔥`}
         </p>
 
         {/* Click to close hint */}

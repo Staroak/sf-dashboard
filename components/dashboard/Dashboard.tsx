@@ -13,6 +13,7 @@ import { FundedPage } from "./FundedPage";
 import { QuotesPage } from "./QuotesPage";
 import { ThemeToggle } from "./ThemeToggle";
 import { GoalCelebration, BrokerCelebration } from "./GoalCelebration";
+import { isRealBroker } from "@/lib/brokers";
 
 // Daily goals configuration
 const DAILY_GOALS = {
@@ -80,7 +81,7 @@ interface DashboardData {
 
 const REFRESH_INTERVAL = 10000; // 10 seconds
 
-const PAGES = ["applications", "appraisals", "submissions", "funded", "teamleads", "summary", "quotes"] as const;
+const PAGES = ["applications", "appraisals", "submissions", "funded", "teamleads", "summary"] as const; // "quotes" temporarily hidden
 type PageType = typeof PAGES[number];
 
 const PAGE_LABELS: Record<PageType, string> = {
@@ -91,7 +92,7 @@ const PAGE_LABELS: Record<PageType, string> = {
   teamleads: "Team Leads",
   // weeklyteam: "Weekly Team",  // hidden - add back to PAGES to re-enable
   summary: "Summary",
-  quotes: "Quotes",
+  // quotes: "Quotes", // temporarily hidden
 };
 
 // Page-specific durations in milliseconds
@@ -103,7 +104,7 @@ const PAGE_DURATIONS: Record<PageType, number> = {
   teamleads: 25000,  // 25 seconds for team leads
   // weeklyteam: 25000, // 25 seconds for weekly team - hidden
   summary: 40000, // 40 secs for summary page
-  quotes: 20000,
+  // quotes: 20000, // temporarily hidden
 };
 
 export function Dashboard() {
@@ -124,8 +125,8 @@ export function Dashboard() {
     value: number;
   } | null>(null);
 
-  // Broker celebration state - tracks which brokers have been celebrated for each metric
-  const [celebratedBrokers, setCelebratedBrokers] = useState<Set<string>>(new Set());
+  // Broker celebration state - tracks the last celebrated value for each broker+metric
+  const [celebratedBrokers, setCelebratedBrokers] = useState<Map<string, number>>(new Map());
   const [brokerCelebration, setBrokerCelebration] = useState<{
     show: boolean;
     brokerName: string;
@@ -284,7 +285,8 @@ export function Dashboard() {
   useEffect(() => {
     if (!data?.daily.salesMetrics?.byBroker) return;
 
-    const brokers = data.daily.salesMetrics.byBroker;
+    // Only celebrate real brokers - filter out admin/system users
+    const brokers = data.daily.salesMetrics.byBroker.filter((b: BrokerStats) => isRealBroker(b.userName));
     const newCelebrations: Array<{
       brokerName: string;
       metricType: BrokerMetricType;
@@ -298,40 +300,43 @@ export function Dashboard() {
       const apprGoal = getBrokerGoal(broker.userName, 'appraisals');
       const subGoal = getBrokerGoal(broker.userName, 'submissions');
 
-      // Check applications goal
+      // Check applications goal - celebrate when hitting OR exceeding goal
       const appKey = `${broker.userId}-applications`;
-      if (broker.applicationsTaken >= appGoal && !celebratedBrokers.has(appKey)) {
+      const lastAppCelebrated = celebratedBrokers.get(appKey) || 0;
+      if (broker.applicationsTaken >= appGoal && broker.applicationsTaken > lastAppCelebrated) {
         newCelebrations.push({
           brokerName: broker.userName,
           metricType: 'applications',
           value: broker.applicationsTaken,
           goal: appGoal,
         });
-        setCelebratedBrokers(prev => new Set([...prev, appKey]));
+        setCelebratedBrokers(prev => new Map([...prev, [appKey, broker.applicationsTaken]]));
       }
 
-      // Check appraisals goal
+      // Check appraisals goal - celebrate when hitting OR exceeding goal
       const apprKey = `${broker.userId}-appraisals`;
-      if (broker.appraisalsOrdered >= apprGoal && !celebratedBrokers.has(apprKey)) {
+      const lastApprCelebrated = celebratedBrokers.get(apprKey) || 0;
+      if (broker.appraisalsOrdered >= apprGoal && broker.appraisalsOrdered > lastApprCelebrated) {
         newCelebrations.push({
           brokerName: broker.userName,
           metricType: 'appraisals',
           value: broker.appraisalsOrdered,
           goal: apprGoal,
         });
-        setCelebratedBrokers(prev => new Set([...prev, apprKey]));
+        setCelebratedBrokers(prev => new Map([...prev, [apprKey, broker.appraisalsOrdered]]));
       }
 
-      // Check submissions goal
+      // Check submissions goal - celebrate when hitting OR exceeding goal
       const subKey = `${broker.userId}-submissions`;
-      if (broker.submissions >= subGoal && !celebratedBrokers.has(subKey)) {
+      const lastSubCelebrated = celebratedBrokers.get(subKey) || 0;
+      if (broker.submissions >= subGoal && broker.submissions > lastSubCelebrated) {
         newCelebrations.push({
           brokerName: broker.userName,
           metricType: 'submissions',
           value: broker.submissions,
           goal: subGoal,
         });
-        setCelebratedBrokers(prev => new Set([...prev, subKey]));
+        setCelebratedBrokers(prev => new Map([...prev, [subKey, broker.submissions]]));
       }
     }
 
@@ -481,8 +486,8 @@ export function Dashboard() {
              brokers={monthlyBrokers}
            />
          );
-       case "quotes":
-         return <QuotesPage />;
+       // case "quotes":
+       //   return <QuotesPage />; // temporarily hidden
      }
    };
 
