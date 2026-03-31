@@ -1,26 +1,59 @@
 import { NextResponse } from 'next/server';
 import { salesforceService } from '@/lib/salesforce';
+import type { DashboardMetrics } from '@/lib/salesforce';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function GET() {
-  try {
-    // Fetch all metrics from Salesforce (including contacts from Task object)
-    let salesforceMetrics = null;
-    try {
-      console.log('Fetching Salesforce metrics...');
-      salesforceMetrics = await salesforceService.getAllMetrics();
-      console.log('Salesforce metrics fetched successfully');
+// In-memory cache: 2-minute TTL to reduce Salesforce API calls
+const CACHE_TTL_MS = 2 * 60 * 1000;
+let cachedMetrics: DashboardMetrics | null = null;
+let cacheTimestamp = 0;
+let fetchInProgress: Promise<DashboardMetrics | null> | null = null;
 
-      // Debug: Log all broker names returned from Salesforce
-      const allBrokerNames = salesforceMetrics?.daily.byBroker.map(b => b.userName) || [];
-      console.log('=== ALL BROKER NAMES FROM SALESFORCE ===');
-      console.log(JSON.stringify(allBrokerNames.sort(), null, 2));
-      console.log('=========================================');
+async function getCachedMetrics(): Promise<DashboardMetrics | null> {
+  const now = Date.now();
+
+  // Return cached data if still fresh
+  if (cachedMetrics && (now - cacheTimestamp) < CACHE_TTL_MS) {
+    console.log(`Using cached Salesforce data (${Math.round((now - cacheTimestamp) / 1000)}s old)`);
+    return cachedMetrics;
+  }
+
+  // Deduplicate concurrent requests — if a fetch is already in progress, wait for it
+  if (fetchInProgress) {
+    console.log('Waiting for in-progress Salesforce fetch...');
+    return fetchInProgress;
+  }
+
+  // Fetch fresh data
+  fetchInProgress = (async () => {
+    try {
+      console.log('Fetching fresh Salesforce metrics...');
+      const metrics = await salesforceService.getAllMetrics();
+      cachedMetrics = metrics;
+      cacheTimestamp = Date.now();
+      console.log('Salesforce metrics cached successfully');
+      return metrics;
     } catch (err) {
       console.error('Salesforce error:', err);
+      // Return stale cache if available, rather than nothing
+      if (cachedMetrics) {
+        console.log('Returning stale cached data due to error');
+        return cachedMetrics;
+      }
+      return null;
+    } finally {
+      fetchInProgress = null;
     }
+  })();
+
+  return fetchInProgress;
+}
+
+export async function GET() {
+  try {
+    const salesforceMetrics = await getCachedMetrics();
 
     // Build dashboard data from Salesforce metrics
     const dashboardData = {
