@@ -1,46 +1,72 @@
 import { NextResponse } from 'next/server';
-import { salesforceService } from '@/lib/salesforce';
-import type { DashboardMetrics } from '@/lib/salesforce';
+import { updateBrokerList } from '@/lib/brokers';
+import { updateTeams } from '@/lib/teams';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// In-memory cache: 2-minute TTL to reduce Salesforce API calls
+// In-memory cache: 2-minute TTL to reduce CRM API calls
 const CACHE_TTL_MS = 2 * 60 * 1000;
-let cachedMetrics: DashboardMetrics | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let cachedData: any = null;
 let cacheTimestamp = 0;
-let fetchInProgress: Promise<DashboardMetrics | null> | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let fetchInProgress: Promise<any> | null = null;
 
-async function getCachedMetrics(): Promise<DashboardMetrics | null> {
+const CRM_API_URL = process.env.CRM_API_URL;
+const OFFICE_DASHBOARD_API_KEY = process.env.OFFICE_DASHBOARD_API_KEY;
+
+async function getCachedData() {
   const now = Date.now();
 
-  // Return cached data if still fresh
-  if (cachedMetrics && (now - cacheTimestamp) < CACHE_TTL_MS) {
-    console.log(`Using cached Salesforce data (${Math.round((now - cacheTimestamp) / 1000)}s old)`);
-    return cachedMetrics;
+  if (cachedData && (now - cacheTimestamp) < CACHE_TTL_MS) {
+    return cachedData;
   }
 
-  // Deduplicate concurrent requests — if a fetch is already in progress, wait for it
   if (fetchInProgress) {
-    console.log('Waiting for in-progress Salesforce fetch...');
     return fetchInProgress;
   }
 
-  // Fetch fresh data
   fetchInProgress = (async () => {
     try {
-      console.log('Fetching fresh Salesforce metrics...');
-      const metrics = await salesforceService.getAllMetrics();
-      cachedMetrics = metrics;
+      if (!CRM_API_URL) {
+        throw new Error('CRM_API_URL not configured');
+      }
+
+      console.log('Fetching fresh CRM metrics...');
+      const headers: Record<string, string> = { 'Cache-Control': 'no-cache' };
+      if (OFFICE_DASHBOARD_API_KEY) {
+        headers['Authorization'] = `Bearer ${OFFICE_DASHBOARD_API_KEY}`;
+      }
+
+      const response = await fetch(`${CRM_API_URL}/api/office-dashboard`, {
+        cache: 'no-store',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`CRM API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Update dynamic broker list and teams from CRM response
+      if (data.validBrokers) {
+        updateBrokerList(data.validBrokers);
+      }
+      if (data.teams) {
+        updateTeams(data.teams);
+      }
+
+      cachedData = data;
       cacheTimestamp = Date.now();
-      console.log('Salesforce metrics cached successfully');
-      return metrics;
+      console.log('CRM metrics cached successfully');
+      return data;
     } catch (err) {
-      console.error('Salesforce error:', err);
-      // Return stale cache if available, rather than nothing
-      if (cachedMetrics) {
+      console.error('CRM API error:', err);
+      if (cachedData) {
         console.log('Returning stale cached data due to error');
-        return cachedMetrics;
+        return cachedData;
       }
       return null;
     } finally {
@@ -53,45 +79,14 @@ async function getCachedMetrics(): Promise<DashboardMetrics | null> {
 
 export async function GET() {
   try {
-    const salesforceMetrics = await getCachedMetrics();
+    const dashboardData = await getCachedData();
 
-    // Build dashboard data from Salesforce metrics
-    const dashboardData = {
-      timestamp: new Date().toISOString(),
-      daily: {
-        contactsMade: salesforceMetrics?.daily.contactsMade || 0,
-        closedWon: salesforceMetrics?.daily.closedWon || 0,
-        applicationsTaken: salesforceMetrics?.daily.applicationsTaken || 0,
-        appraisalsOrdered: salesforceMetrics?.daily.appraisalsOrdered || 0,
-        submissions: salesforceMetrics?.daily.submissions || 0,
-        salesMetrics: salesforceMetrics?.daily || null
-      },
-      yesterday: {
-        contactsMade: salesforceMetrics?.yesterday.contactsMade || 0,
-        closedWon: salesforceMetrics?.yesterday.closedWon || 0,
-        applicationsTaken: salesforceMetrics?.yesterday.applicationsTaken || 0,
-        appraisalsOrdered: salesforceMetrics?.yesterday.appraisalsOrdered || 0,
-        submissions: salesforceMetrics?.yesterday.submissions || 0,
-        salesMetrics: salesforceMetrics?.yesterday || null
-      },
-      weekly: {
-        contactsMade: salesforceMetrics?.weekly.contactsMade || 0,
-        closedWon: salesforceMetrics?.weekly.closedWon || 0,
-        applicationsTaken: salesforceMetrics?.weekly.applicationsTaken || 0,
-        appraisalsOrdered: salesforceMetrics?.weekly.appraisalsOrdered || 0,
-        submissions: salesforceMetrics?.weekly.submissions || 0,
-        salesMetrics: salesforceMetrics?.weekly || null
-      },
-      monthly: {
-        contactsMade: salesforceMetrics?.monthly.contactsMade || 0,
-        closedWon: salesforceMetrics?.monthly.closedWon || 0,
-        applicationsTaken: salesforceMetrics?.monthly.applicationsTaken || 0,
-        appraisalsOrdered: salesforceMetrics?.monthly.appraisalsOrdered || 0,
-        submissions: salesforceMetrics?.monthly.submissions || 0,
-        salesMetrics: salesforceMetrics?.monthly || null
-      },
-      leaderboard: salesforceMetrics?.leaderboard || []
-    };
+    if (!dashboardData) {
+      return NextResponse.json(
+        { error: 'Failed to fetch dashboard data' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(dashboardData, {
       headers: {

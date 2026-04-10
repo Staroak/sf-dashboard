@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Trophy, Medal, Award, Users, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TEAM_LEADS, TEAM_LEAD_NAMES } from "@/lib/teams";
+import { getTeamLeads, getTeamLeadNames } from "@/lib/teams";
 
 interface BrokerStats {
   userId: string;
@@ -42,8 +42,10 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps)
   // Calculate aggregated stats for each team lead
   const { teamStats, yesterdayStats } = useMemo(() => {
     const calculateStats = (brokerList: BrokerStats[]): TeamStats[] => {
-      return TEAM_LEAD_NAMES.map((teamLead) => {
-        const teamMembers = TEAM_LEADS[teamLead];
+      const teamLeads = getTeamLeads();
+      const teamLeadNames = getTeamLeadNames();
+      return teamLeadNames.map((teamLead: string) => {
+        const teamMembers = teamLeads[teamLead];
 
         // Filter brokers to find team members
         // Match by first name (first word) for more robust matching
