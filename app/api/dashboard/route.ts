@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { updateBrokerList } from '@/lib/brokers';
-import { updateTeams } from '@/lib/teams';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -50,12 +49,9 @@ async function getCachedData() {
 
       const data = await response.json();
 
-      // Update dynamic broker list and teams from CRM response
+      // Update dynamic broker list from CRM response
       if (data.validBrokers) {
         updateBrokerList(data.validBrokers);
-      }
-      if (data.teams) {
-        updateTeams(data.teams);
       }
 
       cachedData = data;

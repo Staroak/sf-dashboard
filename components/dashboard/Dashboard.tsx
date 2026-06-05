@@ -14,6 +14,7 @@ import { QuotesPage } from "./QuotesPage";
 import { ThemeToggle } from "./ThemeToggle";
 import { GoalCelebration, BrokerCelebration } from "./GoalCelebration";
 import { isRealBroker } from "@/lib/brokers";
+import type { TeamConfig } from "@/lib/teams";
 
 // Daily goals configuration
 const DAILY_GOALS = {
@@ -77,6 +78,7 @@ interface DashboardData {
   weekly: PeriodData;
   monthly: PeriodData;
   leaderboard: BrokerStats[];
+  teams?: TeamConfig[];
 }
 
 const REFRESH_INTERVAL = 10000; // 10 seconds
@@ -380,6 +382,7 @@ export function Dashboard() {
   const yesterdayBrokers: BrokerStats[] = data?.yesterday?.salesMetrics?.byBroker || [];
   const weeklyBrokers: BrokerStats[] = data?.weekly?.salesMetrics?.byBroker || [];
   const monthlyBrokers: BrokerStats[] = data?.monthly.salesMetrics?.byBroker || data?.leaderboard || [];
+  const teams: TeamConfig[] = data?.teams ?? [];
 
   // Get current time formatted
   const currentTime = new Date().toLocaleTimeString('en-US', {
@@ -459,9 +462,9 @@ export function Dashboard() {
           />
         );
       case "teamleads":
-        return <TeamLeadsPage brokers={dailyBrokers} yesterdayBrokers={yesterdayBrokers} />;
+        return <TeamLeadsPage brokers={dailyBrokers} yesterdayBrokers={yesterdayBrokers} teams={teams} />;
       // case "weeklyteam":
-      //   return <WeeklyTeamPage brokers={weeklyBrokers} />;
+      //   return <WeeklyTeamPage brokers={weeklyBrokers} teams={teams} />;
        case "summary":
          return (
            <SummaryPage

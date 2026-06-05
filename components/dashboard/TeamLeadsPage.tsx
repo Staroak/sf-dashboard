@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Trophy, Medal, Award, Users, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getTeamLeads, getTeamLeadNames } from "@/lib/teams";
+import { getTeamBrokers, type TeamConfig } from "@/lib/teams";
 
 interface BrokerStats {
   userId: string;
@@ -18,6 +18,7 @@ interface BrokerStats {
 interface TeamLeadsPageProps {
   brokers: BrokerStats[];
   yesterdayBrokers?: BrokerStats[];
+  teams: TeamConfig[];
 }
 
 interface TeamStats {
@@ -38,29 +39,17 @@ const rankConfig = [
   { bg: "bg-slate-500/5", border: "border-slate-500/30", nameColor: "text-slate-300" },
 ];
 
-export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps) {
+export function TeamLeadsPage({ brokers, yesterdayBrokers, teams }: TeamLeadsPageProps) {
   // Calculate aggregated stats for each team lead
   const { teamStats, yesterdayStats } = useMemo(() => {
-    const calculateStats = (brokerList: BrokerStats[]): TeamStats[] => {
-      const teamLeads = getTeamLeads();
-      const teamLeadNames = getTeamLeadNames();
-      return teamLeadNames.map((teamLead: string) => {
-        const teamMembers = teamLeads[teamLead];
+    // Teams that should never be shown on the board, regardless of stats
+    const HIDDEN_TEAMS = new Set(["neville"]);
 
-        // Filter brokers to find team members
-        // Match by first name (first word) for more robust matching
-        const teamBrokers = brokerList.filter((broker) =>
-          teamMembers.some((member) => {
-            const brokerFirstName = broker.userName.toLowerCase().split(/\s+/)[0];
-            const memberFirstName = member.toLowerCase().split(/\s+/)[0];
-            // Match if first names are equal, or if full names contain each other
-            return (
-              brokerFirstName === memberFirstName ||
-              broker.userName.toLowerCase().includes(member.toLowerCase()) ||
-              member.toLowerCase().includes(broker.userName.toLowerCase())
-            );
-          })
-        );
+    const calculateStats = (brokerList: BrokerStats[]): TeamStats[] => {
+      return teams
+        .filter((team) => !HIDDEN_TEAMS.has(team.displayName.trim().toLowerCase()))
+        .map((team) => {
+        const teamBrokers = getTeamBrokers(team, brokerList);
 
         // Sum up the stats
         const applications = teamBrokers.reduce((sum, b) => sum + b.applicationsTaken, 0);
@@ -68,7 +57,7 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps)
         const submissions = teamBrokers.reduce((sum, b) => sum + b.submissions, 0);
 
         return {
-          teamLead,
+          teamLead: team.displayName,
           applications,
           appraisals,
           submissions,
@@ -87,7 +76,7 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps)
     }
 
     return { teamStats: todayStats, yesterdayStats: yesterdayLookup };
-  }, [brokers, yesterdayBrokers]);
+  }, [brokers, yesterdayBrokers, teams]);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -103,6 +92,8 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps)
         );
     }
   };
+
+  const showTeamsLoading = teams.length === 0;
 
   return (
     <div className="h-full flex flex-col gap-3 px-24 py-4 overflow-hidden">
@@ -137,8 +128,19 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps)
       </div>
 
       {/* Leaderboard Grid */}
-      <div className="flex-1 min-h-0 grid grid-rows-7 gap-2">
-        {teamStats.map((team, index) => {
+      {showTeamsLoading ? (
+        <div className="flex-1 min-h-0 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary" />
+            <p className="text-2xl font-semibold text-muted-foreground">Loading CRM teams...</p>
+          </div>
+        </div>
+      ) : (
+        <div
+          className="flex-1 min-h-0 grid gap-2"
+          style={{ gridTemplateRows: `repeat(${teamStats.length}, minmax(0, 1fr))` }}
+        >
+          {teamStats.map((team, index) => {
           const rank = index + 1;
           const config = rankConfig[index] || rankConfig[6];
           const yesterday = yesterdayStats[team.teamLead];
@@ -227,8 +229,9 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers }: TeamLeadsPageProps)
               </div>
             </div>
           );
-        })}
-      </div>
+          })}
+        </div>
+      )}
     </div>
   );
 }
