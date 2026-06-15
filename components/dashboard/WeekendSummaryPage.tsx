@@ -2,6 +2,7 @@
 
 import { SimpleStat } from "./SimpleStat";
 import { FullLeaderboard } from "./FullLeaderboard";
+import { BluePearl } from "./BluePearl";
 import { Flame } from "lucide-react";
 
 interface BrokerStats {
@@ -35,21 +36,15 @@ export function WeekendSummaryPage({
   const weekendActivity = weekendApplications + weekendAppraisals + weekendSubmissions;
   return (
     <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
-      {/* Title */}
-      <div className="flex items-center justify-center gap-3 flex-shrink-0">
-        <Flame className="h-9 w-9 text-orange-500" />
-        <h1 className="font-black text-4xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 bg-clip-text text-transparent">
-          Weekend Wrap-Up — Sat + Sun
-        </h1>
-        <Flame className="h-9 w-9 text-orange-500" />
-      </div>
-
-      {/* Weekend totals */}
-      <div className="flex items-center justify-around flex-shrink-0">
-        <SimpleStat value={weekendApplications} label="Applications" color="green" />
-        <SimpleStat value={weekendAppraisals} label="Appraisals" color="purple" />
-        <SimpleStat value={weekendSubmissions} label="Submissions" color="orange" />
-        <SimpleStat value={weekendContacts} label="Contacts" color="blue" />
+      {/* Top Stats Row — mirrors ApplicationsPage exactly so both pages are the same height */}
+      <div className="flex items-center flex-shrink-0">
+        <div className="flex items-center justify-between flex-1">
+          <SimpleStat value={weekendApplications} label="Applications" color="green" />
+          <SimpleStat value={weekendAppraisals} label="Appraisals" color="purple" />
+          <SimpleStat value={weekendSubmissions} label="Submissions" color="orange" />
+          <SimpleStat value={weekendContacts} label="Contacts" color="blue" />
+        </div>
+        <BluePearl current={weekendActivity} goal={weekendGoal} size="horizontal" />
       </div>
 
       {/* Per-broker weekend leaderboard — ranked by combined activity (apps + appraisals + submissions) */}
@@ -57,7 +52,10 @@ export function WeekendSummaryPage({
         <FullLeaderboard
           brokers={brokers}
           metric="activity"
-          title="Weekend Activity"
+          title="Weekend Wrap-Up"
+          titleIcon={Flame}
+          titleIconClassName="text-orange-500"
+          titleClassName="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 bg-clip-text text-transparent"
           dailyGoal={weekendGoal}
           goalCurrent={weekendActivity}
           goalLabel="Weekend Goal"

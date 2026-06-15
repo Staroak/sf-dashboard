@@ -86,6 +86,29 @@ interface DashboardData {
   teams?: TeamConfig[];
 }
 
+// Merge two per-broker lists into one, summing every metric by userId (falling back to
+// userName). Used for the Monday Sat–Mon roll-up so a broker's weekend + Monday numbers
+// combine into a single row.
+function mergeBrokerLists(a: BrokerStats[], b: BrokerStats[]): BrokerStats[] {
+  const map = new Map<string, BrokerStats>();
+  for (const list of [a, b]) {
+    for (const broker of list) {
+      const key = broker.userId || broker.userName;
+      const existing = map.get(key);
+      if (existing) {
+        existing.contactsMade += broker.contactsMade;
+        existing.closedWon += broker.closedWon;
+        existing.applicationsTaken += broker.applicationsTaken;
+        existing.appraisalsOrdered += broker.appraisalsOrdered;
+        existing.submissions += broker.submissions;
+      } else {
+        map.set(key, { ...broker });
+      }
+    }
+  }
+  return Array.from(map.values());
+}
+
 // The 10am catch-up reel announces every weekend achievement: one card per
 // (broker, metric) where the broker logged at least this many of that metric.
 const WEEKEND_CELEBRATE_THRESHOLD = 1;
@@ -515,6 +538,32 @@ export function Dashboard() {
   const weekend = data?.weekend;
   const showWeekendSideline = dayContext.isMonday && !!weekend;
 
+  // Monday roll-up: on Mondays the "today" view (Applications / Appraisals / Submissions
+  // pages + the Summary's Today's Performance) shows a Sat–Mon total — i.e. the weekend
+  // bucket folded into the live daily numbers, both the headline stats and the per-broker
+  // leaderboards. The dedicated Weekend page still shows Sat+Sun on its own, and the
+  // celebrations + 10am catch-up reel keep reading raw daily/weekend so weekend wins
+  // aren't double-counted. Yesterday deltas are suppressed here since a 3-day total vs a
+  // single Sunday isn't a meaningful comparison.
+  const rollupActive = showWeekendSideline;
+  const baseDaily = {
+    contactsMade: data?.daily.contactsMade || 0,
+    applicationsTaken: data?.daily.applicationsTaken || 0,
+    appraisalsOrdered: data?.daily.appraisalsOrdered || 0,
+    submissions: data?.daily.submissions || 0,
+  };
+  const displayDaily = rollupActive
+    ? {
+        contactsMade: baseDaily.contactsMade + (weekend?.contactsMade || 0),
+        applicationsTaken: baseDaily.applicationsTaken + (weekend?.applicationsTaken || 0),
+        appraisalsOrdered: baseDaily.appraisalsOrdered + (weekend?.appraisalsOrdered || 0),
+        submissions: baseDaily.submissions + (weekend?.submissions || 0),
+      }
+    : baseDaily;
+  const displayDailyBrokers = rollupActive
+    ? mergeBrokerLists(dailyBrokers, weekendBrokers)
+    : dailyBrokers;
+
   // Get current time formatted
   const currentTime = new Date().toLocaleTimeString('en-US', {
     hour: '2-digit',
@@ -544,39 +593,39 @@ export function Dashboard() {
       case "applications":
         return (
           <ApplicationsPage
-            dailyContacts={data?.daily.contactsMade || 0}
-            dailyApplications={data?.daily.applicationsTaken || 0}
+            dailyContacts={displayDaily.contactsMade}
+            dailyApplications={displayDaily.applicationsTaken}
             monthlyApplications={data?.monthly.applicationsTaken || 0}
-            brokers={dailyBrokers}
-            yesterdayContacts={data?.yesterday?.contactsMade}
-            yesterdayApplications={data?.yesterday?.applicationsTaken}
-            yesterdayBrokers={yesterdayBrokers}
+            brokers={displayDailyBrokers}
+            yesterdayContacts={rollupActive ? undefined : data?.yesterday?.contactsMade}
+            yesterdayApplications={rollupActive ? undefined : data?.yesterday?.applicationsTaken}
+            yesterdayBrokers={rollupActive ? undefined : yesterdayBrokers}
             weekendApplications={showWeekendSideline ? weekend?.applicationsTaken : undefined}
           />
         );
       case "appraisals":
         return (
           <AppraisalsPage
-            dailyContacts={data?.daily.contactsMade || 0}
-            dailyAppraisals={data?.daily.appraisalsOrdered || 0}
+            dailyContacts={displayDaily.contactsMade}
+            dailyAppraisals={displayDaily.appraisalsOrdered}
             monthlyAppraisals={data?.monthly.appraisalsOrdered || 0}
-            brokers={dailyBrokers}
-            yesterdayContacts={data?.yesterday?.contactsMade}
-            yesterdayAppraisals={data?.yesterday?.appraisalsOrdered}
-            yesterdayBrokers={yesterdayBrokers}
+            brokers={displayDailyBrokers}
+            yesterdayContacts={rollupActive ? undefined : data?.yesterday?.contactsMade}
+            yesterdayAppraisals={rollupActive ? undefined : data?.yesterday?.appraisalsOrdered}
+            yesterdayBrokers={rollupActive ? undefined : yesterdayBrokers}
             weekendAppraisals={showWeekendSideline ? weekend?.appraisalsOrdered : undefined}
           />
         );
       case "submissions":
         return (
           <SubmissionsPage
-            dailyContacts={data?.daily.contactsMade || 0}
-            dailySubmissions={data?.daily.submissions || 0}
+            dailyContacts={displayDaily.contactsMade}
+            dailySubmissions={displayDaily.submissions}
             monthlySubmissions={data?.monthly.submissions || 0}
-            brokers={dailyBrokers}
-            yesterdayContacts={data?.yesterday?.contactsMade}
-            yesterdaySubmissions={data?.yesterday?.submissions}
-            yesterdayBrokers={yesterdayBrokers}
+            brokers={displayDailyBrokers}
+            yesterdayContacts={rollupActive ? undefined : data?.yesterday?.contactsMade}
+            yesterdaySubmissions={rollupActive ? undefined : data?.yesterday?.submissions}
+            yesterdayBrokers={rollupActive ? undefined : yesterdayBrokers}
             weekendSubmissions={showWeekendSideline ? weekend?.submissions : undefined}
           />
         );
@@ -613,10 +662,10 @@ export function Dashboard() {
          return (
            <SummaryPage
              daily={{
-               contactsMade: data?.daily.contactsMade || 0,
-               applicationsTaken: data?.daily.applicationsTaken || 0,
-               appraisalsOrdered: data?.daily.appraisalsOrdered || 0,
-               submissions: data?.daily.submissions || 0,
+               contactsMade: displayDaily.contactsMade,
+               applicationsTaken: displayDaily.applicationsTaken,
+               appraisalsOrdered: displayDaily.appraisalsOrdered,
+               submissions: displayDaily.submissions,
              }}
              monthly={{
                contactsMade: data?.monthly.contactsMade || 0,
@@ -624,7 +673,7 @@ export function Dashboard() {
                appraisalsOrdered: data?.monthly.appraisalsOrdered || 0,
                submissions: data?.monthly.submissions || 0,
              }}
-             yesterday={{
+             yesterday={rollupActive ? undefined : {
                contactsMade: data?.yesterday?.contactsMade || 0,
                applicationsTaken: data?.yesterday?.applicationsTaken || 0,
                appraisalsOrdered: data?.yesterday?.appraisalsOrdered || 0,

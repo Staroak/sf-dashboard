@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { isRealBroker } from "@/lib/brokers";
-import { Trophy, Medal, Award, Star, TrendingUp, TrendingDown } from "lucide-react";
+import { Trophy, Medal, Award, Star, TrendingUp, TrendingDown, type LucideIcon } from "lucide-react";
 
 interface BrokerStats {
   userId: string;
@@ -34,6 +34,12 @@ interface FullLeaderboardProps {
   goalLabel?: string;
   goalCurrent?: number;
   goalYesterday?: number;
+  /** Title icon (defaults to Trophy) — e.g. Flame for the Weekend page. */
+  titleIcon?: LucideIcon;
+  /** Classes for the title icon (defaults to yellow). */
+  titleIconClassName?: string;
+  /** Extra classes for the title text (e.g. a gradient). */
+  titleClassName?: string;
 }
 
 const tierConfig = [
@@ -105,7 +111,11 @@ export function FullLeaderboard({
   goalLabel,
   goalCurrent,
   goalYesterday,
+  titleIcon,
+  titleIconClassName,
+  titleClassName,
 }: FullLeaderboardProps) {
+  const TitleIcon = titleIcon ?? Trophy;
   // Create lookup map for yesterday's broker data
   const yesterdayLookup = new Map<string, number>();
   if (yesterdayBrokers) {
@@ -140,12 +150,12 @@ export function FullLeaderboard({
   const sortedBrokers = Array.from(brokerMap.values())
     .sort((a, b) => metricValue(b, metric) - metricValue(a, metric));
 
-  // Group by tiers: 7, 8, 9, 9 = 33 total
+  // Group by tiers: 7, 9, 9, 9 = 34 total
   const tiers = [
     { brokers: sortedBrokers.slice(0, 7), startRank: 1, tier: 0 },
-    { brokers: sortedBrokers.slice(7, 15), startRank: 8, tier: 1 },
-    { brokers: sortedBrokers.slice(15, 24), startRank: 16, tier: 2 },
-    { brokers: sortedBrokers.slice(24, 34), startRank: 25, tier: 3 },
+    { brokers: sortedBrokers.slice(7, 16), startRank: 8, tier: 1 },
+    { brokers: sortedBrokers.slice(16, 25), startRank: 17, tier: 2 },
+    { brokers: sortedBrokers.slice(25, 34), startRank: 26, tier: 3 },
   ];
 
   return (
@@ -153,8 +163,8 @@ export function FullLeaderboard({
       {/* Header - Horizontal layout with title left, goal right */}
       <div className="flex items-center justify-between mb-3 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <Trophy className="h-10 w-10 text-yellow-500" />
-          <h1 className="font-black text-5xl text-foreground">{title}</h1>
+          <TitleIcon className={cn("h-10 w-10", titleIconClassName ?? "text-yellow-500")} />
+          <h1 className={cn("font-black text-5xl whitespace-nowrap", titleClassName ?? "text-foreground")}>{title}</h1>
         </div>
 
         {/* Compact horizontal goal display */}
