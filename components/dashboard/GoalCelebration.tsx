@@ -18,6 +18,10 @@ interface BrokerCelebrationProps {
   value: number;
   goal: number;
   onClose: () => void;
+  /** "weekend" rebrands the card for the Monday 10am Weekend Wrapped catch-up. */
+  variant?: "daily" | "weekend";
+  /** Auto-advance delay in ms (the weekend reel uses a short one for many cards). */
+  durationMs?: number;
 }
 
 const goalConfig = {
@@ -404,11 +408,12 @@ const brokerMetricConfig = {
   },
 };
 
-export function BrokerCelebration({ show, brokerName, metricType, value, goal, onClose }: BrokerCelebrationProps) {
+export function BrokerCelebration({ show, brokerName, metricType, value, goal, onClose, variant = "daily", durationMs = 25000 }: BrokerCelebrationProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [confetti, setConfetti] = useState<Array<{ id: number; left: number; delay: number; color: string; size: number; rotation: number }>>([]);
 
   const config = brokerMetricConfig[metricType];
+  const isWeekend = variant === "weekend";
 
   useEffect(() => {
     if (show) {
@@ -424,14 +429,14 @@ export function BrokerCelebration({ show, brokerName, metricType, value, goal, o
       }));
       setConfetti(pieces);
 
-      // Auto-close after 25 seconds
+      // Auto-close after the configured duration
       const timer = setTimeout(() => {
         handleClose();
-      }, 25000);
+      }, durationMs);
 
       return () => clearTimeout(timer);
     }
-  }, [show]);
+  }, [show, durationMs]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -539,6 +544,15 @@ export function BrokerCelebration({ show, brokerName, metricType, value, goal, o
           <PartyPopper className="absolute -top-8 left-0 w-16 h-16 text-blue-400 animate-party-pop-delayed scale-x-[-1]" />
         </div>
 
+        {/* Weekend Wrapped eyebrow */}
+        {isWeekend && (
+          <div className="mb-3 px-6 py-2 rounded-full bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 shadow-2xl shadow-orange-500/40 animate-badge-pop">
+            <span className="text-2xl md:text-3xl font-black text-white tracking-widest flex items-center gap-2">
+              🎁 WEEKEND WRAPPED 🎁
+            </span>
+          </div>
+        )}
+
         {/* Broker name - BIG and prominent */}
         <h1 className="text-7xl md:text-9xl font-black mb-4 animate-rainbow-text tracking-tight text-center">
           {firstName.toUpperCase()}
@@ -546,7 +560,9 @@ export function BrokerCelebration({ show, brokerName, metricType, value, goal, o
 
         {/* Achievement text */}
         <h2 className="text-5xl md:text-6xl font-bold text-white mb-8 animate-badge-pop text-center">
-          {value > goal ? "CRUSHED THEIR DAILY GOAL!" : "HIT THEIR DAILY GOAL!"}
+          {isWeekend
+            ? (value > goal ? "CRUSHED THE WEEKEND!" : "PUT IN WEEKEND WORK!")
+            : (value > goal ? "CRUSHED THEIR DAILY GOAL!" : "HIT THEIR DAILY GOAL!")}
         </h2>
 
         {/* Metric badge */}
@@ -568,16 +584,20 @@ export function BrokerCelebration({ show, brokerName, metricType, value, goal, o
             "bg-clip-text text-transparent",
             `bg-gradient-to-r ${config.color}`
           )}>
-            {value} / {goal}
+            {isWeekend ? value : `${value} / ${goal}`}
           </div>
-          <span className="text-2xl text-white/70">daily goal</span>
+          <span className="text-2xl text-white/70">
+            {isWeekend ? `weekend ${config.titlePlural.toLowerCase()}` : "daily goal"}
+          </span>
         </div>
 
         {/* Celebration message */}
         <p className="text-2xl md:text-3xl text-white/80 mt-12 font-medium animate-fade-in-up text-center">
-          {value > goal
-            ? `${firstName} is on fire! ${value} and counting! 🔥`
-            : `Way to go, ${firstName}! Keep up the amazing work! 🔥`}
+          {isWeekend
+            ? `${firstName} put in the work this weekend! 🔥`
+            : value > goal
+              ? `${firstName} is on fire! ${value} and counting! 🔥`
+              : `Way to go, ${firstName}! Keep up the amazing work! 🔥`}
         </p>
 
         {/* Click to close hint */}

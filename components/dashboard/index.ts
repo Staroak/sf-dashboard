@@ -5,3 +5,5 @@ export { MetricCard } from './MetricCard';
 export { QuoteSidebar } from './QuoteSidebar';
 export { QuotesPage } from './QuotesPage';
 export { StatsSection } from './StatsSection';
+export { WeekendSummaryPage } from './WeekendSummaryPage';
+export { WeekendWrappedIntro } from './WeekendWrappedIntro';

@@ -22,6 +22,8 @@ interface ApplicationsPageProps {
   yesterdayContacts?: number;
   yesterdayApplications?: number;
   yesterdayBrokers?: BrokerStats[];
+  /** Weekend (Sat+Sun) total — shown as a sideline stat on Mondays only. */
+  weekendApplications?: number;
 }
 
 export function ApplicationsPage({
@@ -32,6 +34,7 @@ export function ApplicationsPage({
   yesterdayContacts,
   yesterdayApplications,
   yesterdayBrokers,
+  weekendApplications,
 }: ApplicationsPageProps) {
   return (
     <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
@@ -40,6 +43,9 @@ export function ApplicationsPage({
         <div className="flex items-center justify-between flex-1">
           <SimpleStat value={dailyContacts} label="Contacts Made Today" color="blue" previousValue={yesterdayContacts} />
           <SimpleStat value={dailyApplications} label="Applications Today" color="green" previousValue={yesterdayApplications} />
+          {weekendApplications !== undefined && (
+            <SimpleStat value={weekendApplications} label="Weekend (Sat+Sun)" color="cyan" />
+          )}
           <SimpleStat value={monthlyApplications} label="Applications This Month" color="green" />
         </div>
         <BluePearl current={dailyApplications} goal={33} size="horizontal" />

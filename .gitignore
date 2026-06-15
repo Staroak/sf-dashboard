@@ -45,3 +45,9 @@ public/sw.js
 public/sw.js.map
 public/workbox-*.js
 public/workbox-*.js.map
+
+# screenshots & scratch/generated docs (keep app images + README tracked)
+*.png
+*.md
+!public/*.png
+!README.md

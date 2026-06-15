@@ -14,7 +14,15 @@ interface BrokerStats {
   submissions: number;
 }
 
-type MetricKey = "applicationsTaken" | "appraisalsOrdered" | "submissions" | "contactsMade" | "closedWon";
+type MetricKey = "applicationsTaken" | "appraisalsOrdered" | "submissions" | "contactsMade" | "closedWon" | "activity";
+
+// "activity" = applications + appraisals + submissions (combined weekend score).
+function metricValue(broker: BrokerStats, metric: MetricKey): number {
+  if (metric === "activity") {
+    return broker.applicationsTaken + broker.appraisalsOrdered + broker.submissions;
+  }
+  return broker[metric];
+}
 
 interface FullLeaderboardProps {
   brokers: BrokerStats[];
@@ -102,7 +110,7 @@ export function FullLeaderboard({
   const yesterdayLookup = new Map<string, number>();
   if (yesterdayBrokers) {
     for (const broker of yesterdayBrokers) {
-      yesterdayLookup.set(broker.userId, broker[metric]);
+      yesterdayLookup.set(broker.userId, metricValue(broker, metric));
     }
   }
   // Debug: Check if Alice Nabi is in the incoming brokers
@@ -123,14 +131,14 @@ export function FullLeaderboard({
   const brokerMap = new Map<string, BrokerStats>();
   for (const broker of validBrokers) {
     const existing = brokerMap.get(broker.userName);
-    if (!existing || broker[metric] > existing[metric]) {
+    if (!existing || metricValue(broker, metric) > metricValue(existing, metric)) {
       brokerMap.set(broker.userName, broker);
     }
   }
 
   // Sort by metric value descending
   const sortedBrokers = Array.from(brokerMap.values())
-    .sort((a, b) => b[metric] - a[metric]);
+    .sort((a, b) => metricValue(b, metric) - metricValue(a, metric));
 
   // Group by tiers: 7, 8, 9, 9 = 33 total
   const tiers = [
@@ -226,7 +234,7 @@ export function FullLeaderboard({
               {/* Names List - Each broker row takes equal space */}
               <div className="flex flex-col flex-1 min-h-0 gap-1">
                 {tier.brokers.map((broker, idx) => {
-                  const score = broker[metric];
+                  const score = metricValue(broker, metric);
                   const rank = tier.startRank + idx;
                   const percentage = Math.min((score / dailyGoal) * 100, 100);
                   const yesterdayScore = yesterdayLookup.get(broker.userId);

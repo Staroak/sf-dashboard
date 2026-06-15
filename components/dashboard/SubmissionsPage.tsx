@@ -22,6 +22,8 @@ interface SubmissionsPageProps {
   yesterdayContacts?: number;
   yesterdaySubmissions?: number;
   yesterdayBrokers?: BrokerStats[];
+  /** Weekend (Sat+Sun) total — shown as a sideline stat on Mondays only. */
+  weekendSubmissions?: number;
 }
 
 export function SubmissionsPage({
@@ -32,6 +34,7 @@ export function SubmissionsPage({
   yesterdayContacts,
   yesterdaySubmissions,
   yesterdayBrokers,
+  weekendSubmissions,
 }: SubmissionsPageProps) {
   return (
     <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
@@ -40,6 +43,9 @@ export function SubmissionsPage({
         <div className="flex items-center justify-between flex-1">
           <SimpleStat value={dailyContacts} label="Contacts Made Today" color="blue" previousValue={yesterdayContacts} />
           <SimpleStat value={dailySubmissions} label="Submissions Today" color="orange" previousValue={yesterdaySubmissions} />
+          {weekendSubmissions !== undefined && (
+            <SimpleStat value={weekendSubmissions} label="Weekend (Sat+Sun)" color="cyan" />
+          )}
           <SimpleStat value={monthlySubmissions} label="Submissions This Month" color="orange" />
         </div>
         <BluePearl current={dailySubmissions} goal={6} size="horizontal" />

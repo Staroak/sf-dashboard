@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { RefreshCw, Wifi, WifiOff, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ApplicationsPage } from "./ApplicationsPage";
@@ -11,9 +11,12 @@ import { WeeklyTeamPage } from "./WeeklyTeamPage";
 import { SummaryPage } from "./SummaryPage";
 import { FundedPage } from "./FundedPage";
 import { QuotesPage } from "./QuotesPage";
+import { WeekendSummaryPage } from "./WeekendSummaryPage";
+import { WeekendWrappedIntro } from "./WeekendWrappedIntro";
 import { ThemeToggle } from "./ThemeToggle";
 import { GoalCelebration, BrokerCelebration } from "./GoalCelebration";
 import { isRealBroker } from "@/lib/brokers";
+import { getDayContext, mondayKey, type DayContext } from "@/lib/day-context";
 import type { TeamConfig } from "@/lib/teams";
 
 // Daily goals configuration
@@ -49,6 +52,7 @@ function getBrokerGoal(brokerName: string, metric: BrokerMetricType): number {
 
 type GoalType = keyof typeof DAILY_GOALS;
 type BrokerMetricType = 'applications' | 'appraisals' | 'submissions';
+type CelebrationVariant = 'daily' | 'weekend';
 
 interface BrokerStats {
   userId: string;
@@ -77,14 +81,30 @@ interface DashboardData {
   yesterday: PeriodData;
   weekly: PeriodData;
   monthly: PeriodData;
+  weekend?: PeriodData; // Sat+Sun production, surfaced on Mondays only
   leaderboard: BrokerStats[];
   teams?: TeamConfig[];
 }
 
+// The 10am catch-up reel announces every weekend achievement: one card per
+// (broker, metric) where the broker logged at least this many of that metric.
+const WEEKEND_CELEBRATE_THRESHOLD = 1;
+// Safety cap on total reel cards (a pathological guard, not normally reached).
+const WEEKEND_REEL_MAX = 120;
+// Each reel card auto-advances after this long — kept short since the reel can be long.
+const WEEKEND_REEL_CARD_MS = 5000;
+// Metrics announced in the reel, in per-broker order.
+const WEEKEND_REEL_METRICS = [
+  { type: 'applications', field: 'applicationsTaken', goal: BROKER_DAILY_GOALS.applications },
+  { type: 'appraisals', field: 'appraisalsOrdered', goal: BROKER_DAILY_GOALS.appraisals },
+  { type: 'submissions', field: 'submissions', goal: BROKER_DAILY_GOALS.submissions },
+] as const;
+
 const REFRESH_INTERVAL = 10000; // 10 seconds
 
-const PAGES = ["applications", "appraisals", "submissions", "funded", "teamleads", "summary"] as const; // "quotes" temporarily hidden
-type PageType = typeof PAGES[number];
+const BASE_PAGES = ["applications", "appraisals", "submissions", "funded", "teamleads", "summary"] as const; // "quotes" temporarily hidden
+// "weekend" is not in BASE_PAGES — it's injected into the rotation on Mondays only.
+type PageType = typeof BASE_PAGES[number] | "weekend";
 
 const PAGE_LABELS: Record<PageType, string> = {
   applications: "Applications",
@@ -94,6 +114,7 @@ const PAGE_LABELS: Record<PageType, string> = {
   teamleads: "Team Leads",
   // weeklyteam: "Weekly Team",  // hidden - add back to PAGES to re-enable
   summary: "Summary",
+  weekend: "Weekend",
   // quotes: "Quotes", // temporarily hidden
 };
 
@@ -106,6 +127,7 @@ const PAGE_DURATIONS: Record<PageType, number> = {
   teamleads: 25000,  // 25 seconds for team leads
   // weeklyteam: 25000, // 25 seconds for weekly team - hidden
   summary: 40000, // 40 secs for summary page
+  weekend: 30000, // 30 secs for the Monday weekend wrap-up
   // quotes: 20000, // temporarily hidden
 };
 
@@ -118,6 +140,36 @@ export function Dashboard() {
   const [isOnline, setIsOnline] = useState(true);
   const [currentPage, setCurrentPage] = useState<PageType>("applications");
   const [isPaused, setIsPaused] = useState(false);
+
+  // Day/time context — drives all Monday-only weekend behavior. Computed after mount
+  // (and re-checked each minute) to avoid SSR/hydration mismatch and to catch the 10am
+  // crossover. See lib/day-context.ts (supports ?day=mon&hour=10 dev overrides).
+  const [dayContext, setDayContext] = useState<DayContext>({
+    isMonday: false,
+    isWeekendCatchUpTime: false,
+    forced: false,
+  });
+  useEffect(() => {
+    const update = () => setDayContext(getDayContext());
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Only light up the weekend feature when the CRM actually returns a weekend bucket.
+  // (Boolean, not the object, so refetches every 10s don't churn activePages identity.)
+  const hasWeekendData = !!data?.weekend;
+
+  // On Mondays the weekend wrap-up is featured first; the rest of the week it's absent.
+  // Absent entirely until the CRM provides `weekend` — feature stays dormant otherwise.
+  const activePages: PageType[] = useMemo(
+    () => (dayContext.isMonday && hasWeekendData ? ["weekend", ...BASE_PAGES] : [...BASE_PAGES]),
+    [dayContext.isMonday, hasWeekendData]
+  );
+
+  // Tracks whether we've already jumped to the weekend page / fired the catch-up reel.
+  const jumpedToWeekend = useRef(false);
+  const weekendCatchUpRan = useRef(false);
 
   // Goal celebration state
   const [celebratedGoals, setCelebratedGoals] = useState<Set<GoalType>>(new Set());
@@ -135,13 +187,18 @@ export function Dashboard() {
     metricType: BrokerMetricType;
     value: number;
     goal: number;
+    variant?: CelebrationVariant;
   } | null>(null);
   const [brokerCelebrationQueue, setBrokerCelebrationQueue] = useState<Array<{
     brokerName: string;
     metricType: BrokerMetricType;
     value: number;
     goal: number;
+    variant?: CelebrationVariant;
   }>>([]);
+
+  // Weekend Wrapped intro splash — plays once at 10am Monday, before the reels.
+  const [weekendWrapped, setWeekendWrapped] = useState(false);
 
   // Audio ref for celebration sound
   const celebrationAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -195,7 +252,14 @@ export function Dashboard() {
     }
 
     try {
-      const response = await fetch(`/api/dashboard?t=${Date.now()}`, {
+      // Forward ?mock=1 from the page URL so the demo payload (with the weekend
+      // bucket) can be previewed without changing .env.local.
+      const mockParam =
+        typeof window !== 'undefined' &&
+        new URLSearchParams(window.location.search).get('mock') === '1'
+          ? '&mock=1'
+          : '';
+      const response = await fetch(`/api/dashboard?t=${Date.now()}${mockParam}`, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache',
@@ -231,17 +295,31 @@ export function Dashboard() {
   useEffect(() => {
     if (isPaused) return;
 
-    const duration = PAGE_DURATIONS[currentPage];
+    const duration = PAGE_DURATIONS[currentPage] ?? 11000;
     const timeout = setTimeout(() => {
       setCurrentPage((prev) => {
-        const currentIndex = PAGES.indexOf(prev);
-        const nextIndex = (currentIndex + 1) % PAGES.length;
-        return PAGES[nextIndex];
+        const currentIndex = activePages.indexOf(prev);
+        const nextIndex = (currentIndex + 1) % activePages.length;
+        return activePages[nextIndex];
       });
     }, duration);
 
     return () => clearTimeout(timeout);
-  }, [isPaused, currentPage]);
+  }, [isPaused, currentPage, activePages]);
+
+  // On Monday, open on the weekend wrap-up (once). If we leave Monday, reset so the
+  // current page falls back into the normal rotation.
+  useEffect(() => {
+    if (dayContext.isMonday && hasWeekendData) {
+      if (!jumpedToWeekend.current) {
+        setCurrentPage("weekend");
+        jumpedToWeekend.current = true;
+      }
+    } else {
+      jumpedToWeekend.current = false;
+      setCurrentPage((prev) => (prev === "weekend" ? "applications" : prev));
+    }
+  }, [dayContext.isMonday, hasWeekendData]);
 
   // Online/offline detection
   useEffect(() => {
@@ -348,32 +426,80 @@ export function Dashboard() {
     }
   }, [data, celebratedBrokers]);
 
-  // Process broker celebration queue - show one at a time
+  // Process broker celebration queue - show one at a time.
+  // Held while the Weekend Wrapped intro is up so the splash plays first.
   useEffect(() => {
-    if (brokerCelebrationQueue.length > 0 && !brokerCelebration && !celebration) {
+    if (brokerCelebrationQueue.length > 0 && !brokerCelebration && !celebration && !weekendWrapped) {
       const [next, ...rest] = brokerCelebrationQueue;
       setBrokerCelebration({ show: true, ...next });
       setBrokerCelebrationQueue(rest);
       playCelebrationSound();
     }
-  }, [brokerCelebrationQueue, brokerCelebration, celebration, playCelebrationSound]);
+  }, [brokerCelebrationQueue, brokerCelebration, celebration, weekendWrapped, playCelebrationSound]);
 
   const handleCloseBrokerCelebration = () => {
     stopCelebrationSound();
     setBrokerCelebration(null);
   };
 
+  // Weekend catch-up reel — at 10am Monday, replay the weekend's wins for the office.
+  // Weekend apps live in data.weekend (not data.daily), so they never trip the normal
+  // daily celebrations; they're held and fired here once per Monday.
+  useEffect(() => {
+    const weekendBrokers = data?.weekend?.salesMetrics?.byBroker;
+    if (!weekendBrokers || !dayContext.isWeekendCatchUpTime || weekendCatchUpRan.current) return;
+
+    // Once per Monday per device — unless a dev override (?day/?hour) is active, so the
+    // demo is repeatable.
+    const storageKey = `weekendCatchUp:${mondayKey()}`;
+    if (!dayContext.forced && typeof window !== "undefined" && localStorage.getItem(storageKey)) {
+      weekendCatchUpRan.current = true;
+      return;
+    }
+
+    // One announcement per achievement: walk brokers (most active first), and for each,
+    // emit a card for every metric they logged this weekend.
+    const announcements = weekendBrokers
+      .filter(b => isRealBroker(b.userName))
+      .sort((a, b) =>
+        (b.applicationsTaken + b.appraisalsOrdered + b.submissions) -
+        (a.applicationsTaken + a.appraisalsOrdered + a.submissions)
+      )
+      .flatMap(b =>
+        WEEKEND_REEL_METRICS
+          .filter(m => b[m.field] >= WEEKEND_CELEBRATE_THRESHOLD)
+          .map(m => ({
+            brokerName: b.userName,
+            metricType: m.type as BrokerMetricType,
+            value: b[m.field],
+            goal: m.goal,
+            variant: "weekend" as CelebrationVariant,
+          }))
+      )
+      .slice(0, WEEKEND_REEL_MAX);
+
+    if (announcements.length > 0) {
+      // Lead with the "Weekend Wrapped" splash; the reel is gated until it closes.
+      setWeekendWrapped(true);
+      setBrokerCelebrationQueue(prev => [...prev, ...announcements]);
+    }
+    weekendCatchUpRan.current = true;
+    if (!dayContext.forced && typeof window !== "undefined") {
+      localStorage.setItem(storageKey, "1");
+    }
+  }, [data, dayContext.isWeekendCatchUpTime, dayContext.forced]);
+
   const goToPrevPage = () => {
-    const currentIndex = PAGES.indexOf(currentPage);
-    const prevIndex = (currentIndex - 1 + PAGES.length) % PAGES.length;
-    setCurrentPage(PAGES[prevIndex]);
+    const currentIndex = activePages.indexOf(currentPage);
+    const prevIndex = (currentIndex - 1 + activePages.length) % activePages.length;
+    setCurrentPage(activePages[prevIndex]);
     setIsPaused(true);
   };
 
   const goToNextPage = () => {
-    const currentIndex = PAGES.indexOf(currentPage);
-    const nextIndex = (currentIndex + 1) % PAGES.length;
-    setCurrentPage(PAGES[nextIndex]);
+    const currentIndex = activePages.indexOf(currentPage);
+    const nextIndex = (currentIndex + 1) % activePages.length;
+    setCurrentPage(activePages[nextIndex]);
     setIsPaused(true);
   };
 
@@ -382,7 +508,12 @@ export function Dashboard() {
   const yesterdayBrokers: BrokerStats[] = data?.yesterday?.salesMetrics?.byBroker || [];
   const weeklyBrokers: BrokerStats[] = data?.weekly?.salesMetrics?.byBroker || [];
   const monthlyBrokers: BrokerStats[] = data?.monthly.salesMetrics?.byBroker || data?.leaderboard || [];
+  const weekendBrokers: BrokerStats[] = data?.weekend?.salesMetrics?.byBroker || [];
   const teams: TeamConfig[] = data?.teams ?? [];
+
+  // Weekend sideline values — only meaningful on Mondays.
+  const weekend = data?.weekend;
+  const showWeekendSideline = dayContext.isMonday && !!weekend;
 
   // Get current time formatted
   const currentTime = new Date().toLocaleTimeString('en-US', {
@@ -420,6 +551,7 @@ export function Dashboard() {
             yesterdayContacts={data?.yesterday?.contactsMade}
             yesterdayApplications={data?.yesterday?.applicationsTaken}
             yesterdayBrokers={yesterdayBrokers}
+            weekendApplications={showWeekendSideline ? weekend?.applicationsTaken : undefined}
           />
         );
       case "appraisals":
@@ -432,6 +564,7 @@ export function Dashboard() {
             yesterdayContacts={data?.yesterday?.contactsMade}
             yesterdayAppraisals={data?.yesterday?.appraisalsOrdered}
             yesterdayBrokers={yesterdayBrokers}
+            weekendAppraisals={showWeekendSideline ? weekend?.appraisalsOrdered : undefined}
           />
         );
       case "submissions":
@@ -444,6 +577,17 @@ export function Dashboard() {
             yesterdayContacts={data?.yesterday?.contactsMade}
             yesterdaySubmissions={data?.yesterday?.submissions}
             yesterdayBrokers={yesterdayBrokers}
+            weekendSubmissions={showWeekendSideline ? weekend?.submissions : undefined}
+          />
+        );
+      case "weekend":
+        return (
+          <WeekendSummaryPage
+            weekendContacts={weekend?.contactsMade || 0}
+            weekendApplications={weekend?.applicationsTaken || 0}
+            weekendAppraisals={weekend?.appraisalsOrdered || 0}
+            weekendSubmissions={weekend?.submissions || 0}
+            brokers={weekendBrokers}
           />
         );
       case "funded":
@@ -527,7 +671,7 @@ export function Dashboard() {
 
               {/* Page Indicators */}
               <div className="flex items-center gap-2">
-                {PAGES.map((page) => (
+                {activePages.map((page) => (
                   <button
                     key={page}
                     onClick={() => {
@@ -651,7 +795,21 @@ export function Dashboard() {
           metricType={brokerCelebration.metricType}
           value={brokerCelebration.value}
           goal={brokerCelebration.goal}
+          variant={brokerCelebration.variant}
+          durationMs={brokerCelebration.variant === "weekend" ? WEEKEND_REEL_CARD_MS : undefined}
           onClose={handleCloseBrokerCelebration}
+        />
+      )}
+
+      {/* Weekend Wrapped intro splash (Monday 10am, before the reels) */}
+      {weekendWrapped && (
+        <WeekendWrappedIntro
+          show={weekendWrapped}
+          applications={weekend?.applicationsTaken || 0}
+          appraisals={weekend?.appraisalsOrdered || 0}
+          submissions={weekend?.submissions || 0}
+          contributors={weekendBrokers.filter(b => isRealBroker(b.userName) && (b.applicationsTaken > 0 || b.appraisalsOrdered > 0 || b.submissions > 0)).length}
+          onClose={() => setWeekendWrapped(false)}
         />
       )}
     </div>

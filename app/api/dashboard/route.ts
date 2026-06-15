@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { updateBrokerList } from '@/lib/brokers';
+import { getMockDashboardData } from '@/lib/mock-dashboard';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -29,7 +30,13 @@ async function getCachedData() {
   fetchInProgress = (async () => {
     try {
       if (!CRM_API_URL) {
-        throw new Error('CRM_API_URL not configured');
+        // No CRM configured (local dev) — serve mock data so the dashboard,
+        // including the weekend feature, is viewable without credentials.
+        console.log('CRM_API_URL not set — serving mock dashboard data');
+        const mock = getMockDashboardData();
+        cachedData = mock;
+        cacheTimestamp = Date.now();
+        return mock;
       }
 
       console.log('Fetching fresh CRM metrics...');
@@ -73,8 +80,20 @@ async function getCachedData() {
   return fetchInProgress;
 }
 
-export async function GET() {
+const NO_STORE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+  'Pragma': 'no-cache',
+  'Expires': '0',
+};
+
+export async function GET(request: Request) {
   try {
+    // ?mock=1 — preview the demo payload (incl. the weekend bucket) regardless of
+    // CRM config. Lets the weekend feature be shown without touching .env.local.
+    if (new URL(request.url).searchParams.get('mock') === '1') {
+      return NextResponse.json(getMockDashboardData(), { headers: NO_STORE_HEADERS });
+    }
+
     const dashboardData = await getCachedData();
 
     if (!dashboardData) {
@@ -84,13 +103,7 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json(dashboardData, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
-    });
+    return NextResponse.json(dashboardData, { headers: NO_STORE_HEADERS });
   } catch (error) {
     console.error('Dashboard API error:', error);
     return NextResponse.json(

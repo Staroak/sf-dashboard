@@ -22,6 +22,8 @@ interface AppraisalsPageProps {
   yesterdayContacts?: number;
   yesterdayAppraisals?: number;
   yesterdayBrokers?: BrokerStats[];
+  /** Weekend (Sat+Sun) total — shown as a sideline stat on Mondays only. */
+  weekendAppraisals?: number;
 }
 
 export function AppraisalsPage({
@@ -32,6 +34,7 @@ export function AppraisalsPage({
   yesterdayContacts,
   yesterdayAppraisals,
   yesterdayBrokers,
+  weekendAppraisals,
 }: AppraisalsPageProps) {
   return (
     <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
@@ -40,6 +43,9 @@ export function AppraisalsPage({
         <div className="flex items-center justify-between flex-1">
           <SimpleStat value={dailyContacts} label="Contacts Made Today" color="blue" previousValue={yesterdayContacts} />
           <SimpleStat value={dailyAppraisals} label="Appraisals Today" color="purple" previousValue={yesterdayAppraisals} />
+          {weekendAppraisals !== undefined && (
+            <SimpleStat value={weekendAppraisals} label="Weekend (Sat+Sun)" color="cyan" />
+          )}
           <SimpleStat value={monthlyAppraisals} label="Appraisals This Month" color="purple" />
         </div>
         <BluePearl current={dailyAppraisals} goal={8} size="horizontal" />
