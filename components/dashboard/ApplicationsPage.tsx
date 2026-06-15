@@ -24,6 +24,8 @@ interface ApplicationsPageProps {
   yesterdayBrokers?: BrokerStats[];
   /** Weekend (Sat+Sun) total — shown as a sideline stat on Mondays only. */
   weekendApplications?: number;
+  /** Monday Sat–Mon roll-up active — relabel "Today" → "Saturday - Monday". */
+  rollup?: boolean;
 }
 
 export function ApplicationsPage({
@@ -35,14 +37,15 @@ export function ApplicationsPage({
   yesterdayApplications,
   yesterdayBrokers,
   weekendApplications,
+  rollup,
 }: ApplicationsPageProps) {
   return (
     <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
       {/* Top Stats Row */}
       <div className="flex items-center flex-shrink-0">
         <div className="flex items-center justify-between flex-1">
-          <SimpleStat value={dailyContacts} label="Contacts Made Today" color="blue" previousValue={yesterdayContacts} />
-          <SimpleStat value={dailyApplications} label="Applications Today" color="green" previousValue={yesterdayApplications} />
+          <SimpleStat value={dailyContacts} label={rollup ? "Contacts Made (Sat-Mon)" : "Contacts Made Today"} color="blue" previousValue={yesterdayContacts} />
+          <SimpleStat value={dailyApplications} label={rollup ? "Applications (Sat-Mon)" : "Applications Today"} color="green" previousValue={yesterdayApplications} />
           {weekendApplications !== undefined && (
             <SimpleStat value={weekendApplications} label="Weekend (Sat+Sun)" color="cyan" />
           )}
@@ -57,7 +60,7 @@ export function ApplicationsPage({
           brokers={brokers}
           yesterdayBrokers={yesterdayBrokers}
           metric="applicationsTaken"
-          title="Today's Applications"
+          title={rollup ? "Saturday - Monday's Applications" : "Today's Applications"}
           dailyGoal={33}
           goalCurrent={dailyApplications}
           goalYesterday={yesterdayApplications}

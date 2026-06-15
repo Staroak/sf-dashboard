@@ -26,6 +26,8 @@ interface SummaryPageProps {
   monthly: PeriodStats;
   yesterday?: PeriodStats;
   brokers: BrokerStats[];
+  /** Monday Sat–Mon roll-up active — relabel "Today's Performance" → "Saturday - Monday's Performance". */
+  rollup?: boolean;
 }
 
 const DAILY_GOALS = {
@@ -34,7 +36,7 @@ const DAILY_GOALS = {
   submissions: 8,
 };
 
-export function SummaryPage({ daily, monthly, yesterday, brokers }: SummaryPageProps) {
+export function SummaryPage({ daily, monthly, yesterday, brokers, rollup }: SummaryPageProps) {
   return (
     <div className="h-full flex flex-col p-3 overflow-hidden">
       <div className="flex-1 grid grid-cols-12 gap-3 min-h-0">
@@ -43,7 +45,7 @@ export function SummaryPage({ daily, monthly, yesterday, brokers }: SummaryPageP
           {/* Left: Today + Monthly Performance side by side (2x4 grid) */}
           <div className="grid grid-cols-2 gap-3 min-h-0">
             <StatsSection
-              title="Today's Performance"
+              title={rollup ? "Saturday - Monday's Performance" : "Today's Performance"}
               period="Daily"
               contactsMade={daily.contactsMade}
               applicationsTaken={daily.applicationsTaken}

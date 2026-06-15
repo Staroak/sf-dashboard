@@ -24,6 +24,8 @@ interface SubmissionsPageProps {
   yesterdayBrokers?: BrokerStats[];
   /** Weekend (Sat+Sun) total — shown as a sideline stat on Mondays only. */
   weekendSubmissions?: number;
+  /** Monday Sat–Mon roll-up active — relabel "Today" → "Saturday - Monday". */
+  rollup?: boolean;
 }
 
 export function SubmissionsPage({
@@ -35,14 +37,15 @@ export function SubmissionsPage({
   yesterdaySubmissions,
   yesterdayBrokers,
   weekendSubmissions,
+  rollup,
 }: SubmissionsPageProps) {
   return (
     <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
       {/* Top Stats Row */}
       <div className="flex items-center flex-shrink-0">
         <div className="flex items-center justify-between flex-1">
-          <SimpleStat value={dailyContacts} label="Contacts Made Today" color="blue" previousValue={yesterdayContacts} />
-          <SimpleStat value={dailySubmissions} label="Submissions Today" color="orange" previousValue={yesterdaySubmissions} />
+          <SimpleStat value={dailyContacts} label={rollup ? "Contacts Made (Sat-Mon)" : "Contacts Made Today"} color="blue" previousValue={yesterdayContacts} />
+          <SimpleStat value={dailySubmissions} label={rollup ? "Submissions (Sat-Mon)" : "Submissions Today"} color="orange" previousValue={yesterdaySubmissions} />
           {weekendSubmissions !== undefined && (
             <SimpleStat value={weekendSubmissions} label="Weekend (Sat+Sun)" color="cyan" />
           )}
@@ -57,7 +60,7 @@ export function SubmissionsPage({
           brokers={brokers}
           yesterdayBrokers={yesterdayBrokers}
           metric="submissions"
-          title="Today's Submissions"
+          title={rollup ? "Saturday - Monday's Submissions" : "Today's Submissions"}
           dailyGoal={6}
           goalCurrent={dailySubmissions}
           goalYesterday={yesterdaySubmissions}

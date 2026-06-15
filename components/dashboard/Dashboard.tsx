@@ -11,7 +11,6 @@ import { WeeklyTeamPage } from "./WeeklyTeamPage";
 import { SummaryPage } from "./SummaryPage";
 import { FundedPage } from "./FundedPage";
 import { QuotesPage } from "./QuotesPage";
-import { WeekendSummaryPage } from "./WeekendSummaryPage";
 import { WeekendWrappedIntro } from "./WeekendWrappedIntro";
 import { ThemeToggle } from "./ThemeToggle";
 import { GoalCelebration, BrokerCelebration } from "./GoalCelebration";
@@ -126,8 +125,7 @@ const WEEKEND_REEL_METRICS = [
 const REFRESH_INTERVAL = 10000; // 10 seconds
 
 const BASE_PAGES = ["applications", "appraisals", "submissions", "funded", "teamleads", "summary"] as const; // "quotes" temporarily hidden
-// "weekend" is not in BASE_PAGES — it's injected into the rotation on Mondays only.
-type PageType = typeof BASE_PAGES[number] | "weekend";
+type PageType = typeof BASE_PAGES[number];
 
 const PAGE_LABELS: Record<PageType, string> = {
   applications: "Applications",
@@ -137,7 +135,6 @@ const PAGE_LABELS: Record<PageType, string> = {
   teamleads: "Team Leads",
   // weeklyteam: "Weekly Team",  // hidden - add back to PAGES to re-enable
   summary: "Summary",
-  weekend: "Weekend",
   // quotes: "Quotes", // temporarily hidden
 };
 
@@ -150,7 +147,6 @@ const PAGE_DURATIONS: Record<PageType, number> = {
   teamleads: 25000,  // 25 seconds for team leads
   // weeklyteam: 25000, // 25 seconds for weekly team - hidden
   summary: 40000, // 40 secs for summary page
-  weekend: 30000, // 30 secs for the Monday weekend wrap-up
   // quotes: 20000, // temporarily hidden
 };
 
@@ -179,19 +175,12 @@ export function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  // Only light up the weekend feature when the CRM actually returns a weekend bucket.
-  // (Boolean, not the object, so refetches every 10s don't churn activePages identity.)
-  const hasWeekendData = !!data?.weekend;
+  // The dedicated weekend wrap-up page was removed — its Sat+Sun production is now rolled
+  // into the Monday "today" view on the regular pages (see the Monday roll-up below), so
+  // the rotation is just the base pages every day.
+  const activePages: PageType[] = useMemo(() => [...BASE_PAGES], []);
 
-  // On Mondays the weekend wrap-up is featured first; the rest of the week it's absent.
-  // Absent entirely until the CRM provides `weekend` — feature stays dormant otherwise.
-  const activePages: PageType[] = useMemo(
-    () => (dayContext.isMonday && hasWeekendData ? ["weekend", ...BASE_PAGES] : [...BASE_PAGES]),
-    [dayContext.isMonday, hasWeekendData]
-  );
-
-  // Tracks whether we've already jumped to the weekend page / fired the catch-up reel.
-  const jumpedToWeekend = useRef(false);
+  // Tracks whether we've already fired the 10am weekend catch-up reel.
   const weekendCatchUpRan = useRef(false);
 
   // Goal celebration state
@@ -329,20 +318,6 @@ export function Dashboard() {
 
     return () => clearTimeout(timeout);
   }, [isPaused, currentPage, activePages]);
-
-  // On Monday, open on the weekend wrap-up (once). If we leave Monday, reset so the
-  // current page falls back into the normal rotation.
-  useEffect(() => {
-    if (dayContext.isMonday && hasWeekendData) {
-      if (!jumpedToWeekend.current) {
-        setCurrentPage("weekend");
-        jumpedToWeekend.current = true;
-      }
-    } else {
-      jumpedToWeekend.current = false;
-      setCurrentPage((prev) => (prev === "weekend" ? "applications" : prev));
-    }
-  }, [dayContext.isMonday, hasWeekendData]);
 
   // Online/offline detection
   useEffect(() => {
@@ -545,7 +520,7 @@ export function Dashboard() {
   // celebrations + 10am catch-up reel keep reading raw daily/weekend so weekend wins
   // aren't double-counted. Yesterday deltas are suppressed here since a 3-day total vs a
   // single Sunday isn't a meaningful comparison.
-  const rollupActive = showWeekendSideline;
+  const rollupActive = dayContext.isMonday && !!weekend;
   const baseDaily = {
     contactsMade: data?.daily.contactsMade || 0,
     applicationsTaken: data?.daily.applicationsTaken || 0,
@@ -601,6 +576,7 @@ export function Dashboard() {
             yesterdayApplications={rollupActive ? undefined : data?.yesterday?.applicationsTaken}
             yesterdayBrokers={rollupActive ? undefined : yesterdayBrokers}
             weekendApplications={showWeekendSideline ? weekend?.applicationsTaken : undefined}
+            rollup={rollupActive}
           />
         );
       case "appraisals":
@@ -614,6 +590,7 @@ export function Dashboard() {
             yesterdayAppraisals={rollupActive ? undefined : data?.yesterday?.appraisalsOrdered}
             yesterdayBrokers={rollupActive ? undefined : yesterdayBrokers}
             weekendAppraisals={showWeekendSideline ? weekend?.appraisalsOrdered : undefined}
+            rollup={rollupActive}
           />
         );
       case "submissions":
@@ -627,16 +604,7 @@ export function Dashboard() {
             yesterdaySubmissions={rollupActive ? undefined : data?.yesterday?.submissions}
             yesterdayBrokers={rollupActive ? undefined : yesterdayBrokers}
             weekendSubmissions={showWeekendSideline ? weekend?.submissions : undefined}
-          />
-        );
-      case "weekend":
-        return (
-          <WeekendSummaryPage
-            weekendContacts={weekend?.contactsMade || 0}
-            weekendApplications={weekend?.applicationsTaken || 0}
-            weekendAppraisals={weekend?.appraisalsOrdered || 0}
-            weekendSubmissions={weekend?.submissions || 0}
-            brokers={weekendBrokers}
+            rollup={rollupActive}
           />
         );
       case "funded":
@@ -680,6 +648,7 @@ export function Dashboard() {
                submissions: data?.yesterday?.submissions || 0,
              }}
              brokers={monthlyBrokers}
+             rollup={rollupActive}
            />
          );
        // case "quotes":

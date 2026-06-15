@@ -24,6 +24,8 @@ interface AppraisalsPageProps {
   yesterdayBrokers?: BrokerStats[];
   /** Weekend (Sat+Sun) total — shown as a sideline stat on Mondays only. */
   weekendAppraisals?: number;
+  /** Monday Sat–Mon roll-up active — relabel "Today" → "Saturday - Monday". */
+  rollup?: boolean;
 }
 
 export function AppraisalsPage({
@@ -35,14 +37,15 @@ export function AppraisalsPage({
   yesterdayAppraisals,
   yesterdayBrokers,
   weekendAppraisals,
+  rollup,
 }: AppraisalsPageProps) {
   return (
     <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
       {/* Top Stats Row */}
       <div className="flex items-center flex-shrink-0">
         <div className="flex items-center justify-between flex-1">
-          <SimpleStat value={dailyContacts} label="Contacts Made Today" color="blue" previousValue={yesterdayContacts} />
-          <SimpleStat value={dailyAppraisals} label="Appraisals Today" color="purple" previousValue={yesterdayAppraisals} />
+          <SimpleStat value={dailyContacts} label={rollup ? "Contacts Made (Sat-Mon)" : "Contacts Made Today"} color="blue" previousValue={yesterdayContacts} />
+          <SimpleStat value={dailyAppraisals} label={rollup ? "Appraisals (Sat-Mon)" : "Appraisals Today"} color="purple" previousValue={yesterdayAppraisals} />
           {weekendAppraisals !== undefined && (
             <SimpleStat value={weekendAppraisals} label="Weekend (Sat+Sun)" color="cyan" />
           )}
@@ -57,7 +60,7 @@ export function AppraisalsPage({
           brokers={brokers}
           yesterdayBrokers={yesterdayBrokers}
           metric="appraisalsOrdered"
-          title="Today's Appraisals"
+          title={rollup ? "Saturday - Monday's Appraisals" : "Today's Appraisals"}
           dailyGoal={8}
           goalCurrent={dailyAppraisals}
           goalYesterday={yesterdayAppraisals}
