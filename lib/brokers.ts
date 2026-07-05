@@ -2,10 +2,10 @@
 // Only these brokers appear on screen — the CRM API may return more,
 // but isRealBroker() filters to this list.
 export const VALID_BROKERS = [
-  'Alice Nabi', 'Alika Walia', 'Art Aguilos','Baldip Nijjar', 'Bowie Nan', 'Brandon Viaje-Roque',
-  'Caitlyn Chretien', 'Charlene Smith', 'Doyle Minhas', 'Garry Singh', 'Gaurav Dadral', 'Gurjit Sandhu',
-  'Gurpreet Kaur', 'Harick Brar', 'Jennifer Souvanvong', 'Karny Mehat',
-  'Lesly Camaclang', 'Madhur Kapoor', 'Mindy Basran', 'Mona Rakkar', 'Natalie Pacheco', 'Nav Cheema', 'Olaf Durkowski',
+  'Alice Nabi', 'Alika Walia', 'Art Aguilos', 'Bowie Nan', 'Brandon Viaje-Roque',
+  'Caitlyn Chretien', 'Charlene Smith', 'Doyle Minhas', 'Garry Singh', 'Gurjit Sandhu',
+  'Harick Brar', 'Jennifer Souvanvong', 'Karny Mehat',
+  'Lesly Camaclang', 'Mindy Basran', 'Mona Rakkar', 'Natalie Pacheco', 'Nav Cheema', 'Olaf Durkowski',
   'Rahul Narula', 'Ranier Manding', 'Renzo Mesia', 'Saihaj Cheema',
   'Salil Singla', 'Sav Cheema', 'Serg Martires', 'Shaneen Mohammed', 'Shiela Jamero', 'Stephanie Viaje',
   'Sunny Dhillon'
