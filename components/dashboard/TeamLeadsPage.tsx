@@ -81,14 +81,14 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers, teams }: TeamLeadsPag
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Trophy className="w-10 h-10 text-yellow-500" />;
+        return <Trophy className="text-yellow-500" style={{ width: "min(2.5rem, 55cqh)", height: "min(2.5rem, 55cqh)" }} />;
       case 2:
-        return <Medal className="w-10 h-10 text-gray-400" />;
+        return <Medal className="text-gray-400" style={{ width: "min(2.5rem, 55cqh)", height: "min(2.5rem, 55cqh)" }} />;
       case 3:
-        return <Award className="w-10 h-10 text-amber-600" />;
+        return <Award className="text-amber-600" style={{ width: "min(2.5rem, 55cqh)", height: "min(2.5rem, 55cqh)" }} />;
       default:
         return (
-          <span className="text-4xl font-black text-muted-foreground">{rank}</span>
+          <span className="font-black text-muted-foreground" style={{ fontSize: "min(2.25rem, 50cqh)" }}>{rank}</span>
         );
     }
   };
@@ -96,31 +96,34 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers, teams }: TeamLeadsPag
   const showTeamsLoading = teams.length === 0;
 
   return (
-    <div className="h-full flex flex-col gap-3 px-24 py-4 overflow-hidden">
+    <div
+      className="h-full flex flex-col gap-3 py-4 overflow-hidden"
+      style={{ paddingLeft: "min(6rem, 7vw)", paddingRight: "min(6rem, 7vw)" }}
+    >
       {/* Header Row - Title + Column Headers */}
       <div className="flex-shrink-0 flex items-center px-6">
         {/* Left side: Rank placeholder + Title */}
         <div className="w-16 flex-shrink-0" /> {/* Match rank column width */}
         <div className="flex items-center gap-4">
-          <Users className="h-10 w-10 text-blue-500" />
-          <h1 className="font-black text-4xl text-foreground">Team Performance</h1>
+          <Users className="text-blue-500" style={{ width: "min(2.5rem, 4.5vh)", height: "min(2.5rem, 4.5vh)" }} />
+          <h1 className="font-black text-foreground" style={{ fontSize: "min(2.25rem, 4.2vh)" }}>Team Performance</h1>
         </div>
         <div className="flex-1" />
 
         {/* Right side: Column Headers - must match data column widths exactly */}
-        <div className="flex items-center flex-shrink-0 gap-8">
-          <div className="w-[240px] text-center">
-            <span className="text-xl font-bold text-green-500 uppercase tracking-wider">
+        <div className="flex items-center flex-shrink-0" style={{ gap: "min(2rem, 3vw)" }}>
+          <div className="text-center" style={{ width: "min(240px, 13vw)" }}>
+            <span className="font-bold text-green-500 uppercase tracking-wider" style={{ fontSize: "min(1.25rem, 2.2vh)" }}>
               Apps
             </span>
           </div>
-          <div className="w-[240px] text-center">
-            <span className="text-xl font-bold text-purple-500 uppercase tracking-wider">
+          <div className="text-center" style={{ width: "min(240px, 13vw)" }}>
+            <span className="font-bold text-purple-500 uppercase tracking-wider" style={{ fontSize: "min(1.25rem, 2.2vh)" }}>
               Appraisals
             </span>
           </div>
-          <div className="w-[240px] text-center">
-            <span className="text-xl font-bold text-orange-500 uppercase tracking-wider">
+          <div className="text-center" style={{ width: "min(240px, 13vw)" }}>
+            <span className="font-bold text-orange-500 uppercase tracking-wider" style={{ fontSize: "min(1.25rem, 2.2vh)" }}>
               Submissions
             </span>
           </div>
@@ -155,11 +158,12 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers, teams }: TeamLeadsPag
             return (
               <span
                 className={cn(
-                  "flex items-center text-sm font-bold ml-1",
+                  "flex items-center font-bold ml-1",
                   delta > 0 ? "text-green-400" : "text-red-400"
                 )}
+                style={{ fontSize: "min(0.875rem, 24cqh)" }}
               >
-                {delta > 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                {delta > 0 ? <TrendingUp style={{ width: "1em", height: "1em" }} /> : <TrendingDown style={{ width: "1em", height: "1em" }} />}
                 {delta > 0 ? "+" : ""}{delta}
               </span>
             );
@@ -169,10 +173,15 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers, teams }: TeamLeadsPag
             <div
               key={team.teamLead}
               className={cn(
-                "flex items-center rounded-2xl border px-6",
+                "flex items-center rounded-2xl border min-h-0 overflow-hidden",
                 config.bg,
                 config.border
               )}
+              style={{
+                containerType: "size",
+                paddingLeft: "min(1.5rem, 3cqw)",
+                paddingRight: "min(1.5rem, 3cqw)",
+              }}
             >
               {/* Rank */}
               <div className="flex items-center justify-center w-16 flex-shrink-0">
@@ -183,7 +192,7 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers, teams }: TeamLeadsPag
               <div className="min-w-0 flex items-center flex-shrink-0">
                 <span
                   className={cn("font-bold truncate", config.nameColor)}
-                  style={{ fontSize: "clamp(1.75rem, 3.5vw, 3rem)" }}
+                  style={{ fontSize: "min(3rem, 3.5vw, 55cqh)" }}
                 >
                   {team.teamLead}
                 </span>
@@ -193,12 +202,12 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers, teams }: TeamLeadsPag
               <div className="flex-1 mx-4 border-b-2 border-dotted border-white/15 self-end mb-4" />
 
               {/* Stats - aligned with header columns */}
-              <div className="flex items-center flex-shrink-0 gap-8">
+              <div className="flex items-center flex-shrink-0" style={{ gap: "min(2rem, 3vw)" }}>
                 {/* Applications */}
-                <div className="w-[240px] flex items-center justify-center">
+                <div className="flex items-center justify-center" style={{ width: "min(240px, 13vw)" }}>
                   <span
                     className="font-black text-green-500 tabular-nums"
-                    style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)" }}
+                    style={{ fontSize: "min(4.5rem, 5vw, 68cqh)" }}
                   >
                     {team.applications}
                   </span>
@@ -206,10 +215,10 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers, teams }: TeamLeadsPag
                 </div>
 
                 {/* Appraisals */}
-                <div className="w-[240px] flex items-center justify-center">
+                <div className="flex items-center justify-center" style={{ width: "min(240px, 13vw)" }}>
                   <span
                     className="font-black text-purple-500 tabular-nums"
-                    style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)" }}
+                    style={{ fontSize: "min(4.5rem, 5vw, 68cqh)" }}
                   >
                     {team.appraisals}
                   </span>
@@ -217,10 +226,10 @@ export function TeamLeadsPage({ brokers, yesterdayBrokers, teams }: TeamLeadsPag
                 </div>
 
                 {/* Submissions */}
-                <div className="w-[240px] flex items-center justify-center">
+                <div className="flex items-center justify-center" style={{ width: "min(240px, 13vw)" }}>
                   <span
                     className="font-black text-orange-500 tabular-nums"
-                    style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)" }}
+                    style={{ fontSize: "min(4.5rem, 5vw, 68cqh)" }}
                   >
                     {team.submissions}
                   </span>

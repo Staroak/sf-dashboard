@@ -81,9 +81,10 @@ export function MetricCard({
     return (
       <div
         className={cn(
-          "relative overflow-hidden rounded-xl border bg-card/80 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0 p-3",
+          "relative overflow-hidden rounded-xl border bg-card/80 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0",
           styles.border
         )}
+        style={{ containerType: 'size', padding: 'min(0.75rem, 5cqh)' }}
       >
         {/* Background gradient */}
         <div className={cn(
@@ -91,17 +92,17 @@ export function MetricCard({
           `bg-gradient-to-br ${styles.gradient}`
         )} />
 
-        <div className="relative flex flex-col items-center gap-1">
+        <div className="relative flex flex-col items-center" style={{ gap: 'min(0.25rem, 2cqh)' }}>
           <div className={cn(
-            "flex items-center justify-center rounded-xl p-3",
+            "flex items-center justify-center rounded-xl",
             styles.iconBg
-          )}>
-            <Icon className="h-8 w-8 text-white" />
+          )} style={{ padding: 'min(0.75rem, 1.3vh, 6cqh)' }}>
+            <Icon className="text-white" style={{ width: 'min(2rem, 3.8vh, 22cqh)', height: 'min(2rem, 3.8vh, 22cqh)' }} />
           </div>
-          <h3 className="font-bold text-4xl tracking-tight text-foreground">
+          <h3 className="font-bold tracking-tight text-foreground" style={{ fontSize: 'min(2.25rem, 4.4vh, 30cqh)', lineHeight: 1.1 }}>
             {value.toLocaleString()}
           </h3>
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <p className="font-medium text-muted-foreground" style={{ fontSize: 'min(0.875rem, 1.8vh, 14cqh)' }}>{title}</p>
         </div>
       </div>
     );
@@ -124,7 +125,7 @@ export function MetricCard({
 
         <div className="relative flex items-center justify-between">
           <div className="flex items-baseline gap-2">
-            <h3 className="font-bold text-3xl tracking-tight text-foreground">
+            <h3 className="font-bold tracking-tight text-foreground" style={{ fontSize: 'min(1.875rem, 3.4vh)' }}>
               {value.toLocaleString()}
             </h3>
             <p className="text-sm font-medium text-muted-foreground">{title}</p>

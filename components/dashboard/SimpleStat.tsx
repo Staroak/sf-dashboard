@@ -76,16 +76,16 @@ export function SimpleStat({ value, label, color, className, previousValue }: Si
   if (styles) {
     return (
       <div className={cn(
-        "flex items-baseline gap-3 px-4 py-2 rounded-xl border",
+        "flex items-baseline gap-3 px-4 py-1.5 rounded-xl border",
         styles.bg,
         styles.border,
         className
       )}>
-        <span className={cn("text-5xl font-bold tabular-nums", styles.value)}>
+        <span className={cn("font-bold tabular-nums", styles.value)} style={{ fontSize: 'min(2.5rem, 4.2vh)', lineHeight: 1.1 }}>
           {value}
         </span>
         {DeltaIndicator}
-        <span className={cn("text-xl font-semibold", styles.label)}>
+        <span className={cn("font-semibold", styles.label)} style={{ fontSize: 'min(1.125rem, 2vh)' }}>
           {label}
         </span>
       </div>
@@ -94,9 +94,9 @@ export function SimpleStat({ value, label, color, className, previousValue }: Si
 
   return (
     <div className={cn("flex items-baseline gap-3", className)}>
-      <span className="text-5xl font-bold tabular-nums">{value}</span>
+      <span className="font-bold tabular-nums" style={{ fontSize: 'min(2.5rem, 4.2vh)', lineHeight: 1.1 }}>{value}</span>
       {DeltaIndicator}
-      <span className="text-xl font-semibold text-muted-foreground">{label}</span>
+      <span className="font-semibold text-muted-foreground" style={{ fontSize: 'min(1.125rem, 2vh)' }}>{label}</span>
     </div>
   );
 }

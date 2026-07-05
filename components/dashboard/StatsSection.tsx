@@ -42,7 +42,7 @@ export function StatsSection({
         ) : (
           <TrendingUp className="h-4 w-4 text-purple-500" />
         )}
-        <h2 className="text-lg font-semibold text-white">{title}</h2>
+        <h2 className="font-semibold text-white" style={{ fontSize: 'min(1.125rem, 2.2vh)' }}>{title}</h2>
       </div>
 
       <div className={vertical ? "flex flex-col gap-2 flex-1 min-h-0" : "grid grid-cols-2 lg:grid-cols-4 gap-3"}>

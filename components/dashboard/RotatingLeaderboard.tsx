@@ -94,15 +94,15 @@ export function RotatingLeaderboard({ brokers, rotationInterval = 5000 }: Rotati
   const maxScore = Math.max(...sortedBrokers.map(b => b[config.key] as number), 1);
 
   return (
-    <div className="rounded-xl border border-border bg-card/80 p-4 shadow-sm h-full flex flex-col">
+    <div className="rounded-xl border border-border bg-card/80 shadow-sm h-full flex flex-col" style={{ padding: 'min(1rem, 1.8vh)' }}>
       {/* Header with metric indicator */}
-      <div className="flex items-center justify-between mb-3 flex-shrink-0">
+      <div className="flex items-center justify-between flex-shrink-0" style={{ marginBottom: 'min(0.75rem, 1.2vh)' }}>
         <div className={cn(
           "flex items-center gap-2 transition-opacity duration-300",
           isTransitioning ? "opacity-0" : "opacity-100"
         )}>
           <MetricIcon className={cn("h-5 w-5", config.color)} />
-          <h3 className="font-semibold text-lg text-foreground">{config.title}</h3>
+          <h3 className="font-semibold text-foreground" style={{ fontSize: 'min(1.125rem, 2.2vh)' }}>{config.title}</h3>
         </div>
 
         {/* Metric dots indicator */}
@@ -129,10 +129,13 @@ export function RotatingLeaderboard({ brokers, rotationInterval = 5000 }: Rotati
       </div>
 
       {/* Leaderboard entries */}
-      <div className={cn(
-        "flex-1 flex flex-col gap-2 transition-all duration-300",
-        isTransitioning ? "opacity-0 transform translate-x-4" : "opacity-100 transform translate-x-0"
-      )}>
+      <div
+        className={cn(
+          "flex-1 min-h-0 grid transition-all duration-300",
+          isTransitioning ? "opacity-0 transform translate-x-4" : "opacity-100 transform translate-x-0"
+        )}
+        style={{ gridTemplateRows: `repeat(${Math.max(sortedBrokers.length, 1)}, minmax(0, 1fr))`, gap: 'min(0.5rem, 0.8vh)' }}
+      >
         {sortedBrokers.map((broker, index) => {
           const score = broker[config.key] as number;
           const rankStyle = rankIcons[index] || { icon: null, color: "text-muted-foreground", bg: "bg-muted", border: "border-muted" };
@@ -143,25 +146,27 @@ export function RotatingLeaderboard({ brokers, rotationInterval = 5000 }: Rotati
             <div
               key={broker.userId}
               className={cn(
-                "relative flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-md flex-1",
+                "relative flex items-center rounded-xl border transition-all hover:shadow-md min-h-0 overflow-hidden",
                 index === 0 && "bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border-yellow-500/30",
                 index === 1 && "bg-gradient-to-r from-gray-400/10 to-slate-400/10 border-gray-400/30",
                 index === 2 && "bg-gradient-to-r from-amber-600/10 to-orange-600/10 border-amber-600/30",
                 index > 2 && "bg-muted/50 border-border"
               )}
+              style={{ containerType: 'size', padding: 'min(0.75rem, 8cqh) min(0.75rem, 2cqw)', gap: 'min(0.75rem, 2cqw)' }}
             >
               {/* Rank badge */}
               <div
                 className={cn(
-                  "flex items-center justify-center w-10 h-10 rounded-full border-2 flex-shrink-0",
+                  "flex items-center justify-center rounded-full border-2 flex-shrink-0",
                   rankStyle.bg,
                   rankStyle.border
                 )}
+                style={{ width: 'min(2.5rem, 72cqh)', height: 'min(2.5rem, 72cqh)' }}
               >
                 {RankIcon ? (
-                  <RankIcon className={cn("h-5 w-5", rankStyle.color)} />
+                  <RankIcon className={cn(rankStyle.color)} style={{ width: 'min(1.25rem, 36cqh)', height: 'min(1.25rem, 36cqh)' }} />
                 ) : (
-                  <span className="font-bold text-lg text-muted-foreground">{index + 1}</span>
+                  <span className="font-bold text-muted-foreground" style={{ fontSize: 'min(1.125rem, 34cqh)' }}>{index + 1}</span>
                 )}
               </div>
 
@@ -169,16 +174,16 @@ export function RotatingLeaderboard({ brokers, rotationInterval = 5000 }: Rotati
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <span className={cn(
-                    "font-semibold truncate text-xl text-foreground",
+                    "font-semibold truncate text-foreground",
                     index === 0 && "text-yellow-500 dark:text-yellow-400"
-                  )}>
+                  )} style={{ fontSize: 'min(1.25rem, 34cqh)' }}>
                     {broker.userName}
                   </span>
-                  <span className="font-bold text-2xl text-foreground ml-2 tabular-nums">{score}</span>
+                  <span className="font-bold text-foreground ml-2 tabular-nums" style={{ fontSize: 'min(1.5rem, 42cqh)' }}>{score}</span>
                 </div>
 
                 {/* Progress bar */}
-                <div className="h-2 rounded-full bg-muted overflow-hidden mt-1">
+                <div className="rounded-full bg-muted overflow-hidden" style={{ height: 'min(0.5rem, 9cqh)', marginTop: 'min(0.25rem, 3cqh)' }}>
                   <div
                     className={cn(
                       "h-full rounded-full transition-all duration-500",

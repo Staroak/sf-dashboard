@@ -24,7 +24,7 @@ export function FundedPage({
   brokers,
 }: FundedPageProps) {
   return (
-    <div className="h-full flex flex-col gap-3 p-3 overflow-hidden">
+    <div className="h-full flex flex-col gap-2 p-2 overflow-hidden">
       {/* Top Stats Row */}
       <div className="flex items-center flex-shrink-0">
         <div className="flex items-center justify-between flex-1">

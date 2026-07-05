@@ -660,7 +660,7 @@ export function Dashboard() {
     <div className="h-screen max-h-screen bg-background text-foreground flex flex-col overflow-hidden">
       {/* Header */}
       <header className="flex-shrink-0 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-        <div className="container mx-auto px-4 py-1.5">
+        <div className="container mx-auto px-4 py-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Logo/Brand */}

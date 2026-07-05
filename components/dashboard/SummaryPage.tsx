@@ -38,10 +38,10 @@ const DAILY_GOALS = {
 
 export function SummaryPage({ daily, monthly, yesterday, brokers, rollup }: SummaryPageProps) {
   return (
-    <div className="h-full flex flex-col p-3 overflow-hidden">
-      <div className="flex-1 grid grid-cols-12 gap-3 min-h-0">
+    <div className="h-full flex flex-col p-2 overflow-hidden">
+      <div className="flex-1 grid grid-cols-12 gap-3 min-h-0" style={{ gridTemplateRows: 'minmax(0, 1fr)' }}>
         {/* Main Stats Area - 9 columns */}
-        <div className="col-span-12 lg:col-span-9 grid grid-cols-2 gap-3 min-h-0">
+        <div className="col-span-9 grid grid-cols-2 gap-3 min-h-0">
           {/* Left: Today + Monthly Performance side by side (2x4 grid) */}
           <div className="grid grid-cols-2 gap-3 min-h-0">
             <StatsSection
@@ -78,9 +78,9 @@ export function SummaryPage({ daily, monthly, yesterday, brokers, rollup }: Summ
         </div>
 
         {/* Sidebar - 3 columns with 3 Daily Goal Pearls */}
-        <aside className="col-span-12 lg:col-span-3 flex flex-col gap-3 min-h-0">
+        <aside className="col-span-3 flex flex-col gap-3 min-h-0">
           {/* Applications Goal */}
-          <div className="rounded-xl border border-border bg-card/80 p-3 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0">
+          <div className="rounded-xl border border-border bg-card/80 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0" style={{ containerType: 'size', padding: 'min(0.75rem, 3cqh)' }}>
             <BluePearl
               current={daily.applicationsTaken}
               goal={DAILY_GOALS.applications}
@@ -90,7 +90,7 @@ export function SummaryPage({ daily, monthly, yesterday, brokers, rollup }: Summ
           </div>
 
           {/* Appraisals Goal */}
-          <div className="rounded-xl border border-border bg-card/80 p-3 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0">
+          <div className="rounded-xl border border-border bg-card/80 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0" style={{ containerType: 'size', padding: 'min(0.75rem, 3cqh)' }}>
             <BluePearl
               current={daily.appraisalsOrdered}
               goal={DAILY_GOALS.appraisals}
@@ -100,7 +100,7 @@ export function SummaryPage({ daily, monthly, yesterday, brokers, rollup }: Summ
           </div>
 
           {/* Submissions Goal */}
-          <div className="rounded-xl border border-border bg-card/80 p-3 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0">
+          <div className="rounded-xl border border-border bg-card/80 shadow-sm flex flex-col items-center justify-center flex-1 min-h-0" style={{ containerType: 'size', padding: 'min(0.75rem, 3cqh)' }}>
             <BluePearl
               current={daily.submissions}
               goal={DAILY_GOALS.submissions}

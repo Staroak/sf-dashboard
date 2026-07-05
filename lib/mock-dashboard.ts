@@ -5,6 +5,7 @@
 // without live CRM credentials. Never reached in production where CRM_API_URL is set.
 
 import { VALID_BROKERS } from './brokers';
+import type { TeamConfig } from './teams';
 
 interface BrokerStats {
   userId: string;
@@ -70,6 +71,22 @@ function makePeriod(scale: number, seedOffset: number): PeriodData {
   return { ...agg, salesMetrics: { ...agg, byBroker } };
 }
 
+// Deterministic mock teams: consecutive chunks of 5 brokers, first broker leads.
+// No ids on purpose — getTeamBrokers falls back to name matching, same as a
+// name-only CRM team config.
+function makeTeams(): TeamConfig[] {
+  const teams: TeamConfig[] = [];
+  for (let i = 0; i < VALID_BROKERS.length; i += 5) {
+    const chunk = VALID_BROKERS.slice(i, i + 5);
+    teams.push({
+      displayName: chunk[0].split(' ')[0],
+      leaderName: chunk[0],
+      members: chunk.slice(1),
+    });
+  }
+  return teams;
+}
+
 export function getMockDashboardData() {
   // daily = a fresh, low Monday morning (stays well under team/broker goals so it reads
   // as "fresh 0's" and doesn't fire daily celebrations).
@@ -83,7 +100,7 @@ export function getMockDashboardData() {
     weekly: makePeriod(9, 400),
     monthly,
     leaderboard: monthly.salesMetrics.byBroker,
-    teams: [] as unknown[],
+    teams: makeTeams(),
     _mock: true,
   };
 }

@@ -31,7 +31,7 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal", 
             }}
           />
           {/* Pearl */}
-          <div className="relative rounded-full border-2 border-blue-200 dark:border-blue-900 p-0.5 w-20 h-20">
+          <div className="relative rounded-full border-2 border-blue-200 dark:border-blue-900 p-0.5" style={{ width: 'min(4.25rem, 7.5vh)', height: 'min(4.25rem, 7.5vh)' }}>
             <div className="relative w-full h-full rounded-full bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-950 dark:to-slate-900 overflow-hidden shadow-inner">
               {/* Water fill */}
               <div
@@ -55,15 +55,15 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal", 
               {/* Center content - x/x */}
               <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                 <span className={cn(
-                  "text-xl font-bold transition-colors",
+                  "font-bold transition-colors",
                   percentage >= 50 ? "text-white drop-shadow-lg" : "text-blue-600 dark:text-blue-400"
-                )}>
+                )} style={{ fontSize: 'min(1.125rem, 2.2vh)' }}>
                   {current}
                 </span>
                 <span className={cn(
-                  "text-xs transition-colors",
+                  "transition-colors",
                   percentage >= 50 ? "text-white/80 drop-shadow" : "text-blue-500 dark:text-blue-300"
-                )}>
+                )} style={{ fontSize: 'min(0.75rem, 1.5vh)' }}>
                   / {goal}
                 </span>
               </div>
@@ -82,18 +82,28 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal", 
     );
   }
 
-  // Size configurations for default/large
-  const pearlSize = isLarge ? "w-32 h-32" : "w-20 h-20";
-  const progressBarWidth = isLarge ? "w-32" : "w-20";
-  const labelSize = isLarge ? "text-2xl" : "text-xs";
-  const numberSize = isLarge ? "text-3xl" : "text-xl";
-  const goalSize = isLarge ? "text-large" : "text-[10px]";
+  // Size configurations for default/large (large uses vh-capped inline styles so it fits short screens)
+  const pearlSize = isLarge ? "" : "w-20 h-20";
+  const progressBarWidth = isLarge ? "" : "w-20";
+  const labelSize = isLarge ? "" : "text-xs";
+  const numberSize = isLarge ? "" : "text-xl";
+  const goalSize = isLarge ? "" : "text-[10px]";
   const shineSize1 = isLarge ? "w-6 h-6 top-2 left-5" : "w-4 h-4 top-1.5 left-3";
   const shineSize2 = isLarge ? "w-3 h-3 top-5 left-6" : "w-2 h-2 top-3 left-4";
 
+  // cqh caps resolve against the size-container card the Summary sidebar wraps
+  // each pearl in (falls back to viewport units when there's no container ancestor).
+  const pearlStyle = isLarge ? { width: 'min(8rem, 14vh, 38cqh)', height: 'min(8rem, 14vh, 38cqh)' } : undefined;
+  const progressBarStyle = isLarge ? { width: 'min(8rem, 14vh, 38cqh)' } : undefined;
+  const labelStyle = isLarge ? { fontSize: 'min(1.5rem, 2.6vh, 10cqh)' } : undefined;
+  const numberStyle = isLarge ? { fontSize: 'min(1.875rem, 3.4vh, 13cqh)' } : undefined;
+  const goalStyle = isLarge ? { fontSize: 'min(1.125rem, 2vh, 8cqh)' } : undefined;
+  const statusStyle = isLarge ? { fontSize: 'min(0.875rem, 1.6vh, 8cqh)' } : undefined;
+  const gapStyle = isLarge ? { gap: 'min(0.75rem, 1vh, 2cqh)' } : undefined;
+
   return (
-    <div className={cn("flex flex-col items-center p-1", isLarge ? "gap-3" : "gap-1.5")}>
-      <span className={cn("font-medium text-muted-foreground", labelSize)}>{label}</span>
+    <div className={cn("flex flex-col items-center p-1", !isLarge && "gap-1.5")} style={gapStyle}>
+      <span className={cn("font-medium text-muted-foreground", labelSize)} style={labelStyle}>{label}</span>
 
       {/* Pearl Container */}
       <div className="relative">
@@ -109,7 +119,7 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal", 
         />
 
         {/* Outer ring */}
-        <div className={cn("relative rounded-full border-2 border-blue-200 dark:border-blue-900 p-0.5", pearlSize)}>
+        <div className={cn("relative rounded-full border-2 border-blue-200 dark:border-blue-900 p-0.5", pearlSize)} style={pearlStyle}>
           {/* Pearl body */}
           <div className="relative w-full h-full rounded-full bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-950 dark:to-slate-900 overflow-hidden shadow-inner">
             {/* Water fill effect */}
@@ -160,14 +170,14 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal", 
                 "font-bold transition-colors",
                 numberSize,
                 percentage >= 50 ? "text-white drop-shadow-lg" : "text-blue-600 dark:text-blue-400"
-              )}>
+              )} style={numberStyle}>
                 {current}
               </span>
               <span className={cn(
                 "transition-colors",
                 goalSize,
                 percentage >= 50 ? "text-white/80 drop-shadow" : "text-blue-500 dark:text-blue-300"
-              )}>
+              )} style={goalStyle}>
                 / {goal}
               </span>
             </div>
@@ -186,7 +196,7 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal", 
 
       {/* Percentage label */}
       <div className="flex items-center gap-1.5">
-        <div className={cn("h-1.5 rounded-full bg-blue-100 dark:bg-blue-900 overflow-hidden", progressBarWidth)}>
+        <div className={cn("h-1.5 rounded-full bg-blue-100 dark:bg-blue-900 overflow-hidden", progressBarWidth)} style={progressBarStyle}>
           <div
             className={cn(
               "h-full rounded-full transition-all duration-1000",
@@ -197,7 +207,7 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal", 
             style={{ width: `${percentage}%` }}
           />
         </div>
-        <span className={cn("font-medium text-blue-600 dark:text-blue-400 min-w-[2.5rem]", labelSize)}>
+        <span className={cn("font-medium text-blue-600 dark:text-blue-400 min-w-[2.5rem]", labelSize)} style={labelStyle}>
           {Math.round(percentage)}%
         </span>
       </div>
@@ -205,9 +215,9 @@ export function BluePearl({ current, goal = 100, label = "Daily Contacts Goal", 
       {/* Status message */}
       <span className={cn(
         "font-medium",
-        isLarge ? "text-sm" : "text-[10px]",
+        !isLarge && "text-[10px]",
         isComplete ? "text-green-500" : "text-muted-foreground"
-      )}>
+      )} style={statusStyle}>
         {isComplete ? "Goal Achieved!" : `${goal - current} more to go`}
       </span>
     </div>

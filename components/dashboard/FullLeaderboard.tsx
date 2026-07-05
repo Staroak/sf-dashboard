@@ -160,21 +160,29 @@ export function FullLeaderboard({
 
   return (
     <div className={cn("h-full flex flex-col", className)}>
-      {/* Header - Horizontal layout with title left, goal right */}
-      <div className="flex items-center justify-between mb-3 flex-shrink-0">
+      {/* Header - Horizontal layout with title left, goal right.
+          All sizes are vh-capped so the header shrinks on short/zoomed screens
+          instead of stealing height from the name grid below. */}
+      <div className="flex items-center justify-between flex-shrink-0" style={{ marginBottom: 'min(0.5rem, 0.8vh)' }}>
         <div className="flex items-center gap-3">
-          <TitleIcon className={cn("h-10 w-10", titleIconClassName ?? "text-yellow-500")} />
-          <h1 className={cn("font-black text-5xl whitespace-nowrap", titleClassName ?? "text-foreground")}>{title}</h1>
+          <TitleIcon
+            className={cn(titleIconClassName ?? "text-yellow-500")}
+            style={{ width: 'min(2rem, 3.6vh)', height: 'min(2rem, 3.6vh)' }}
+          />
+          <h1
+            className={cn("font-black whitespace-nowrap", titleClassName ?? "text-foreground")}
+            style={{ fontSize: 'min(2.25rem, 4vh)', lineHeight: 1.15 }}
+          >{title}</h1>
         </div>
 
         {/* Compact horizontal goal display */}
         {goalLabel && goalCurrent !== undefined && (
-          <div className="flex items-center gap-4 bg-blue-500/10 rounded-xl px-5 py-2 border border-blue-500/30">
+          <div className="flex items-center gap-3 bg-blue-500/10 rounded-xl px-4 border border-blue-500/30" style={{ paddingTop: 'min(0.375rem, 0.7vh)', paddingBottom: 'min(0.375rem, 0.7vh)' }}>
             <div className="flex flex-col items-end">
-              <span className="text-sm font-medium text-blue-400 uppercase tracking-wide">{goalLabel}</span>
+              <span className="font-medium text-blue-400 uppercase tracking-wide" style={{ fontSize: 'min(0.75rem, 1.5vh)' }}>{goalLabel}</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-blue-500">{goalCurrent}</span>
-                <span className="text-xl text-blue-400/70">/ {dailyGoal}</span>
+                <span className="font-black text-blue-500" style={{ fontSize: 'min(1.75rem, 3.2vh)', lineHeight: 1.1 }}>{goalCurrent}</span>
+                <span className="text-blue-400/70" style={{ fontSize: 'min(1rem, 2vh)' }}>/ {dailyGoal}</span>
                 {goalYesterday !== undefined && (
                   <span className={cn(
                     "flex items-center gap-0.5 text-sm font-semibold ml-2",
@@ -192,8 +200,8 @@ export function FullLeaderboard({
               </div>
             </div>
             {/* Mini progress circle */}
-            <div className="relative w-14 h-14">
-              <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+            <div className="relative" style={{ width: 'min(2.75rem, 5.2vh)', height: 'min(2.75rem, 5.2vh)' }}>
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 56 56">
                 <circle
                   cx="28"
                   cy="28"
@@ -216,9 +224,9 @@ export function FullLeaderboard({
                 />
               </svg>
               <span className={cn(
-                "absolute inset-0 flex items-center justify-center text-sm font-bold",
+                "absolute inset-0 flex items-center justify-center font-bold",
                 goalCurrent >= dailyGoal ? "text-green-500" : "text-blue-400"
-              )}>
+              )} style={{ fontSize: 'min(0.75rem, 1.4vh)' }}>
                 {Math.round((goalCurrent / dailyGoal) * 100)}%
               </span>
             </div>
@@ -226,23 +234,33 @@ export function FullLeaderboard({
         )}
       </div>
 
-      {/* 4 Column Grid - Equal Width */}
-      <div className="flex-1 grid grid-cols-4 gap-4 min-h-0">
+      {/* 4 Column Grid - Equal Width. The explicit minmax(0,1fr) row keeps the
+          single grid row from growing past the available height, so tier columns
+          are hard-bounded no matter how big their content wants to be. */}
+      <div className="flex-1 grid grid-cols-4 gap-4 min-h-0" style={{ gridTemplateRows: 'minmax(0, 1fr)' }}>
         {tiers.map((tier, tierIndex) => {
           const config = tierConfig[tierIndex];
-          const brokerCount = tier.brokers.length || 1;
 
           return (
-            <div key={tierIndex} className={cn("flex flex-col rounded-2xl p-3 h-full", config.bg)}>
+            <div key={tierIndex} className={cn("flex flex-col rounded-2xl h-full min-h-0", config.bg)} style={{ padding: 'min(0.625rem, 1.1vh)' }}>
               {/* Tier Header */}
-              <div className="text-center mb-2 flex-shrink-0">
-                <h2 className={cn("font-black text-3xl", config.labelColor)}>
+              <div className="text-center flex-shrink-0" style={{ marginBottom: 'min(0.375rem, 0.7vh)' }}>
+                <h2 className={cn("font-black", config.labelColor)} style={{ fontSize: 'min(1.5rem, 2.8vh)', lineHeight: 1.2 }}>
                   {config.label}
                 </h2>
               </div>
 
-              {/* Names List - Each broker row takes equal space */}
-              <div className="flex flex-col flex-1 min-h-0 gap-1">
+              {/* Names List - a grid of equal minmax(0,1fr) tracks partitions the
+                  column height exactly, so rows can never spill off screen. Each
+                  card is a size container: the cqh/cqw units inside scale text to
+                  the card's own height/width — fit at any screen size or zoom. */}
+              <div
+                className="flex-1 min-h-0 grid"
+                style={{
+                  gridTemplateRows: `repeat(${tier.brokers.length || 1}, minmax(0, 1fr))`,
+                  gap: 'min(0.25rem, 0.5vh)',
+                }}
+              >
                 {tier.brokers.map((broker, idx) => {
                   const score = metricValue(broker, metric);
                   const rank = tier.startRank + idx;
@@ -250,45 +268,36 @@ export function FullLeaderboard({
                   const yesterdayScore = yesterdayLookup.get(broker.userId);
                   const delta = yesterdayScore !== undefined ? score - yesterdayScore : null;
 
-                  // Tier 1 gets icons, others get rank numbers
-                  let badgeContent;
-                  if (tierIndex === 0) {
-                    const IconConfig = tier1Icons[idx];
-                    const Icon = IconConfig.icon;
-                    badgeContent = <Icon className={cn("w-4 h-4", IconConfig.color)} />;
-                  } else {
-                    badgeContent = (
-                      <span
-                        className={cn("font-black", config.nameColor)}
-                        style={{ fontSize: 'clamp(0.8rem, 2.5vw, 1.3rem)' }}
-                      >
-                        {rank}
-                      </span>
-                    );
-                  }
-
                   return (
                     <div
                       key={broker.userId}
                       className={cn(
-                        "flex flex-col rounded-lg border p-2 flex-1",
+                        "flex flex-col rounded-lg border min-h-0 overflow-hidden",
                         config.cardBg,
                         config.cardBorder
                       )}
-                      style={{ minHeight: 0 }}
+                      style={{
+                        containerType: 'size',
+                        padding: 'min(0.375rem, 6cqh) min(0.625rem, 2.5cqw)',
+                      }}
                     >
                       {/* Name row - flex-1 to take available space */}
-                      <div className="flex items-center gap-2 flex-1">
+                      <div className="flex items-center flex-1 min-h-0" style={{ gap: 'min(0.5rem, 2cqw)' }}>
                         {/* Rank number or icon */}
                         {tierIndex === 0 ? (
                           <div
                             className={cn(
-                              "flex items-center justify-center w-9 h-9 rounded-full border flex-shrink-0",
+                              "flex items-center justify-center rounded-full border flex-shrink-0",
                               config.badgeBg,
                               config.badgeBorder
                             )}
+                            style={{ width: 'min(2.5rem, 72cqh)', height: 'min(2.5rem, 72cqh)' }}
                           >
-                            {badgeContent}
+                            {(() => {
+                              const IconConfig = tier1Icons[idx];
+                              const Icon = IconConfig.icon;
+                              return <Icon className={IconConfig.color} style={{ width: 'min(1.125rem, 36cqh)', height: 'min(1.125rem, 36cqh)' }} />;
+                            })()}
                           </div>
                         ) : (
                           <span
@@ -297,9 +306,9 @@ export function FullLeaderboard({
                               config.nameColor
                             )}
                             style={{
-                              fontSize: 'clamp(1.1rem, 3.5vw, 2.5rem)',
-                              lineHeight: 1.2,
-                              marginRight: '0.75rem'
+                              fontSize: 'min(2.75rem, 48cqh, 7cqw)',
+                              lineHeight: 1.1,
+                              marginRight: 'min(0.75rem, 1.5cqw)'
                             }}
                           >
                             {rank}
@@ -311,21 +320,21 @@ export function FullLeaderboard({
                             config.nameColor
                           )}
                           style={{
-                            fontSize: 'clamp(1.1rem, 3.5vw, 2.5rem)',
-                            lineHeight: 1.2
+                            fontSize: 'min(2.75rem, 52cqh, 10cqw)',
+                            lineHeight: 1.1
                           }}
                         >
                           {broker.userName.split(' ')[0]}
                         </span>
-                        <div className="flex items-center gap-1 flex-shrink-0">
+                        <div className="flex items-center flex-shrink-0" style={{ gap: 'min(0.25rem, 1cqw)' }}>
                           <span
                             className={cn(
                               "font-black tabular-nums",
                               config.nameColor
                             )}
                             style={{
-                              fontSize: 'clamp(1.2rem, 4.5vw, 3rem)',
-                              lineHeight: 1.2
+                              fontSize: 'min(3.25rem, 62cqh, 11cqw)',
+                              lineHeight: 1
                             }}
                           >
                             {score}
@@ -333,18 +342,22 @@ export function FullLeaderboard({
                           {delta !== null && delta !== 0 && (
                             <span
                               className={cn(
-                                "flex items-center text-xs font-bold",
+                                "flex items-center font-bold",
                                 delta > 0 ? "text-green-500" : "text-red-500"
                               )}
+                              style={{ fontSize: 'min(0.75rem, 24cqh)' }}
                             >
-                              {delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                              {delta > 0 ? <TrendingUp style={{ width: '1em', height: '1em' }} /> : <TrendingDown style={{ width: '1em', height: '1em' }} />}
                               {delta > 0 ? "+" : ""}{delta}
                             </span>
                           )}
                         </div>
                       </div>
                       {/* Progress bar - pushed to bottom with mt-auto */}
-                      <div className="h-1.5 rounded-full bg-muted/50 mt-auto overflow-hidden flex-shrink-0">
+                      <div
+                        className="rounded-full bg-muted/50 mt-auto overflow-hidden flex-shrink-0"
+                        style={{ height: 'min(0.375rem, 6cqh)', marginTop: 'min(0.2rem, 2cqh)' }}
+                      >
                         <div
                           className={cn(
                             "h-full rounded-full transition-all duration-500",
