@@ -9,6 +9,7 @@ export const VALID_BROKERS = [
   'Brandon Viaje-Roque',
   'Caitlyn Chretien',
   'Charlene Smith',
+  'Danielle Bonneau',
   'Doyle Minhas',
   'Garry Singh',
   'Gurjit Sandhu',
